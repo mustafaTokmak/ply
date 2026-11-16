@@ -1,0 +1,19 @@
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build
+      - name: Test (includes the agent-parity and docs-drift checks)
+        run: swift test
+      - name: Package
+        run: ./scripts/build-app.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ply
+          path: dist/*.zip

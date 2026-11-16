@@ -1,0 +1,1362 @@
+{
+  "components" : {
+    "schemas" : {
+      "Error" : {
+        "properties" : {
+          "code" : {
+            "enum" : [
+              "bad_request",
+              "needs_helper",
+              "unavailable",
+              "failed"
+            ],
+            "type" : "string"
+          },
+          "error" : {
+            "type" : "string"
+          },
+          "fix" : {
+            "description" : "The action that resolves the error, when there is one.",
+            "type" : "string"
+          },
+          "ok" : {
+            "type" : "boolean"
+          }
+        },
+        "type" : "object"
+      }
+    },
+    "securitySchemes" : {
+      "bearer" : {
+        "scheme" : "bearer",
+        "type" : "http"
+      }
+    }
+  },
+  "info" : {
+    "description" : "Ply is a free, open-source macOS menu bar app that keeps your Mac on your iPhone's USB hotspot instead of Wi-Fi, and can combine Wi-Fi + iPhone USB (and Ethernet) so many connections at once use every link. No VPN, no account, no server: everything runs on the Mac. The API listens only on 127.0.0.1. Send `Authorization: Bearer <token>`; the token is in ~/Library/Application Support/Ply/api-token.",
+    "title" : "Ply local API",
+    "version" : "0.1.0"
+  },
+  "openapi" : "3.1.0",
+  "paths" : {
+    "/SKILL.md" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [
+
+        ],
+        "summary" : "Agent skill for Ply's main workflows. No token needed."
+      }
+    },
+    "/health" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [
+
+        ],
+        "summary" : "Liveness: {app, version, engine}. No token needed."
+      }
+    },
+    "/llms-full.txt" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [
+
+        ],
+        "summary" : "Full agent reference. No token needed."
+      }
+    },
+    "/llms.txt" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [
+
+        ],
+        "summary" : "Agent overview of Ply. No token needed."
+      }
+    },
+    "/openapi.json" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [
+
+        ],
+        "summary" : "OpenAPI 3.1 description of this API. No token needed."
+      }
+    },
+    "/proxy.pac" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "security" : [
+
+        ],
+        "summary" : "Proxy auto-config used by Combine. No token needed."
+      }
+    },
+    "/v1/actions" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "summary" : "Every action with its JSON input schema."
+      }
+    },
+    "/v1/actions/about" : {
+      "post" : {
+        "description" : "Version, license, source code and documentation links.",
+        "operationId" : "about",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "About Ply",
+        "x-cli" : "ply about",
+        "x-mcp-tool" : "ply_about",
+        "x-read-only" : true
+      }
+    },
+    "/v1/actions/agent_prompt" : {
+      "post" : {
+        "description" : "A self-contained prompt that describes this Mac's connection state and how to drive Ply, for pasting into any AI agent.",
+        "operationId" : "agent_prompt",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Copy agent prompt",
+        "x-cli" : "ply agent-prompt",
+        "x-mcp-tool" : "ply_agent_prompt",
+        "x-read-only" : true
+      }
+    },
+    "/v1/actions/combine_start" : {
+      "post" : {
+        "description" : "Start Combine: a local proxy on 127.0.0.1:7591 spreads new connections across every link with internet (Wi-Fi, iPhone USB, Ethernet) and, with systemProxy, points macOS's auto-proxy at it. A single download stays on one link; many connections add up.",
+        "operationId" : "combine_start",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+                  "split" : {
+                    "description" : "connection (fastest) or site (one link per site). Saved as the split setting.",
+                    "enum" : [
+                      "connection",
+                      "site"
+                    ],
+                    "type" : "string"
+                  },
+                  "systemProxy" : {
+                    "description" : "Override the systemProxy setting for this run.",
+                    "type" : "boolean"
+                  }
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Combine Wi-Fi + iPhone",
+        "x-cli" : "ply combine on [--split connection|site] [--no-system-proxy]",
+        "x-mcp-tool" : "ply_combine_start",
+        "x-read-only" : false
+      }
+    },
+    "/v1/actions/combine_stop" : {
+      "post" : {
+        "description" : "Stop Combine and restore the proxy settings Ply changed.",
+        "operationId" : "combine_stop",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Stop combining",
+        "x-cli" : "ply combine off",
+        "x-mcp-tool" : "ply_combine_stop",
+        "x-read-only" : false
+      }
+    },
+    "/v1/actions/diagnose" : {
+      "post" : {
+        "description" : "Explain why iPhone USB or Combine is not working and how to fix it. Each finding names the action that fixes it and includes a ready-to-paste agent prompt.",
+        "operationId" : "diagnose",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Diagnose",
+        "x-cli" : "ply diagnose [--json]",
+        "x-mcp-tool" : "ply_diagnose",
+        "x-read-only" : true
+      }
+    },
+    "/v1/actions/disconnect_wifi" : {
+      "post" : {
+        "description" : "Disconnect Wi-Fi from its current network (for example the iPhone's own Wi-Fi hotspot) without turning Wi-Fi off.",
+        "operationId" : "disconnect_wifi",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Leave Wi-Fi network",
+        "x-cli" : "ply wifi disconnect",
+        "x-mcp-tool" : "ply_disconnect_wifi",
+        "x-read-only" : false
+      }
+    },
+    "/v1/actions/get_settings" : {
+      "post" : {
+        "description" : "Read Ply's settings.",
+        "operationId" : "get_settings",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Settings",
+        "x-cli" : "ply settings",
+        "x-mcp-tool" : "ply_get_settings",
+        "x-read-only" : true
+      }
+    },
+    "/v1/actions/install_helper" : {
+      "post" : {
+        "description" : "Install Ply's small root helper and the `ply` command (asks for an admin password once). The helper can only reorder network services, point proxies at Ply's local PAC file, restore them, and toggle one service.",
+        "operationId" : "install_helper",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Install helper",
+        "x-cli" : "ply helper install (or: sudo ply helper install)",
+        "x-mcp-tool" : "ply_install_helper",
+        "x-read-only" : false
+      }
+    },
+    "/v1/actions/prefer_usb" : {
+      "post" : {
+        "description" : "Move every iPhone USB network service above Wi-Fi in macOS's service order and turn off macOS's \"Disable unless needed\" switch for it, so the cable is used whenever it is connected. Needs the helper.",
+        "operationId" : "prefer_usb",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Put iPhone USB first",
+        "x-cli" : "ply prefer-usb",
+        "x-mcp-tool" : "ply_prefer_usb",
+        "x-read-only" : false
+      }
+    },
+    "/v1/actions/quit" : {
+      "post" : {
+        "description" : "Stop the running Ply engine (app or daemon), restoring any proxy settings first.",
+        "operationId" : "quit",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Quit Ply",
+        "x-cli" : "ply quit",
+        "x-mcp-tool" : "ply_quit",
+        "x-read-only" : false
+      }
+    },
+    "/v1/actions/repair_tether" : {
+      "post" : {
+        "description" : "Turn each iPhone USB network service off and on again to wake a tether that is plugged in but not getting an address. Needs the helper.",
+        "operationId" : "repair_tether",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Repair iPhone USB",
+        "x-cli" : "ply repair",
+        "x-mcp-tool" : "ply_repair_tether",
+        "x-read-only" : false
+      }
+    },
+    "/v1/actions/restore_proxies" : {
+      "post" : {
+        "description" : "Put back every macOS proxy setting Ply changed. Safe to run any time.",
+        "operationId" : "restore_proxies",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Restore proxy settings",
+        "x-cli" : "ply restore-proxies",
+        "x-mcp-tool" : "ply_restore_proxies",
+        "x-read-only" : false
+      }
+    },
+    "/v1/actions/set_launch_at_login" : {
+      "post" : {
+        "description" : "Start the Ply menu bar app when you log in.",
+        "operationId" : "set_launch_at_login",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+                  "on" : {
+                    "description" : "true to open at login.",
+                    "type" : "boolean"
+                  }
+                },
+                "required" : [
+                  "on"
+                ],
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Open at login",
+        "x-cli" : "ply login-item on|off",
+        "x-mcp-tool" : "ply_set_launch_at_login",
+        "x-read-only" : false
+      }
+    },
+    "/v1/actions/set_wifi_power" : {
+      "post" : {
+        "description" : "Turn the Mac's Wi-Fi radio on or off.",
+        "operationId" : "set_wifi_power",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+                  "on" : {
+                    "description" : "true to turn Wi-Fi on, false to turn it off.",
+                    "type" : "boolean"
+                  }
+                },
+                "required" : [
+                  "on"
+                ],
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Wi-Fi power",
+        "x-cli" : "ply wifi on|off",
+        "x-mcp-tool" : "ply_set_wifi_power",
+        "x-read-only" : false
+      }
+    },
+    "/v1/actions/show_window" : {
+      "post" : {
+        "description" : "Open Ply's window on the user's screen, with the same controls as the menu bar menu. Use it to show the user what Ply is doing, or when the menu bar icon is hidden because the menu bar is full (common on MacBooks with a notch). Opens Ply.app first if it is not running.",
+        "operationId" : "show_window",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Open Ply window",
+        "x-cli" : "ply open",
+        "x-mcp-tool" : "ply_show_window",
+        "x-read-only" : false
+      }
+    },
+    "/v1/actions/speed_test" : {
+      "post" : {
+        "description" : "Measure download speed on each link alone and on all links at once. Uses mobile data on the iPhone link (capped by speedTestMaxMB per link per phase).",
+        "operationId" : "speed_test",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+                  "mode" : {
+                    "description" : "each = every link alone, combined = all links together, both (default).",
+                    "enum" : [
+                      "each",
+                      "combined",
+                      "both"
+                    ],
+                    "type" : "string"
+                  },
+                  "seconds" : {
+                    "description" : "Seconds per phase, 2 to 15. Default 5.",
+                    "type" : "integer"
+                  }
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Speed test",
+        "x-cli" : "ply speedtest [--seconds 5] [--mode both]",
+        "x-mcp-tool" : "ply_speed_test",
+        "x-read-only" : true
+      }
+    },
+    "/v1/actions/status" : {
+      "post" : {
+        "description" : "Which connection the Mac is using right now, every link with its live speed, the macOS service order, Combine state, helper state and findings.",
+        "operationId" : "status",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Status",
+        "x-cli" : "ply status [--json|--md]",
+        "x-mcp-tool" : "ply_status",
+        "x-read-only" : true
+      }
+    },
+    "/v1/actions/uninstall_helper" : {
+      "post" : {
+        "description" : "Restore proxies, then remove the helper, its LaunchDaemon and the /usr/local/bin/ply link.",
+        "operationId" : "uninstall_helper",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Uninstall helper",
+        "x-cli" : "ply helper uninstall",
+        "x-mcp-tool" : "ply_uninstall_helper",
+        "x-read-only" : false
+      }
+    },
+    "/v1/actions/update_settings" : {
+      "post" : {
+        "description" : "Change one or more settings. Pass only the keys to change.",
+        "operationId" : "update_settings",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "additionalProperties" : false,
+                "properties" : {
+                  "combineAuto" : {
+                    "description" : "Start Combine automatically when iPhone USB and another link (Wi-Fi or Ethernet) both have internet. Default false.",
+                    "type" : "boolean"
+                  },
+                  "leaveIPhoneWiFiWhenUSB" : {
+                    "description" : "If the Mac joins the iPhone's Wi-Fi hotspot while USB is up, leave it (frees Wi-Fi for a real network). Skipped while combining. Default true.",
+                    "type" : "boolean"
+                  },
+                  "preferUSB" : {
+                    "description" : "Keep iPhone USB above Wi-Fi in macOS's service order and turn off its \"Disable unless needed\" switch, so the cable wins whenever it is connected. Needs the helper. Default true.",
+                    "type" : "boolean"
+                  },
+                  "speedTestMaxMB" : {
+                    "description" : "Most megabytes speed_test may download per link per phase (mobile data). 5 to 500. Default 40.",
+                    "type" : "integer"
+                  },
+                  "speedTestURL" : {
+                    "description" : "HTTPS download URL used by speed_test. Default is Cloudflare's speed endpoint.",
+                    "type" : "string"
+                  },
+                  "split" : {
+                    "description" : "How Combine spreads traffic: 'connection' (fastest, per connection) or 'site' (one link per site for 10 minutes). Default connection.",
+                    "enum" : [
+                      "connection",
+                      "site"
+                    ],
+                    "type" : "string"
+                  },
+                  "systemProxy" : {
+                    "description" : "While combining, point macOS's auto-proxy (PAC) at Ply so browsers and most apps use both links. Needs the helper. Default true.",
+                    "type" : "boolean"
+                  },
+                  "tetherInterfaces" : {
+                    "description" : "Extra BSD interface names (e.g. en9) to treat as a phone tether, for Android or other USB modems.",
+                    "items" : {
+                      "type" : "string"
+                    },
+                    "type" : "array"
+                  },
+                  "wifiOffWhenUSB" : {
+                    "description" : "Turn Wi-Fi off while iPhone USB is up and back on when it goes away. Ignored while combining. Default false.",
+                    "type" : "boolean"
+                  }
+                },
+                "type" : "object"
+              }
+            }
+          },
+          "required" : false
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "type" : "object"
+                }
+              }
+            },
+            "description" : "Result as JSON"
+          },
+          "400" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Bad parameters"
+          },
+          "401" : {
+            "description" : "Missing or wrong token"
+          },
+          "default" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/Error"
+                }
+              }
+            },
+            "description" : "Error"
+          }
+        },
+        "summary" : "Change settings",
+        "x-cli" : "ply settings set key=value [key=value ...]",
+        "x-mcp-tool" : "ply_update_settings",
+        "x-read-only" : false
+      }
+    },
+    "/v1/status" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "summary" : "Same as POST /v1/actions/status."
+      }
+    },
+    "/v1/status.md" : {
+      "get" : {
+        "responses" : {
+          "200" : {
+            "description" : "OK"
+          }
+        },
+        "summary" : "Status as Markdown."
+      }
+    }
+  },
+  "security" : [
+    {
+      "bearer" : [
+
+      ]
+    }
+  ],
+  "servers" : [
+    {
+      "url" : "http://127.0.0.1:7590"
+    }
+  ]
+}

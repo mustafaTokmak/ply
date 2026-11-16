@@ -1,0 +1,361 @@
+# Ply
+
+> Ply is a free, open-source macOS menu bar app that keeps your Mac on your iPhone's USB hotspot instead of Wi-Fi, and can combine Wi-Fi + iPhone USB (and Ethernet) so many connections at once use every link. No VPN, no account, no server: everything runs on the Mac.
+
+Ply does three things:
+1. USB first: keeps iPhone USB above Wi-Fi in macOS's service order, leaves the iPhone's Wi-Fi hotspot when the cable is up, and can turn Wi-Fi off while on USB.
+2. Combine: a local proxy on 127.0.0.1:7591 that sends each new connection over the least-loaded link with internet. Many connections (browsing, multi-stream downloads, speed tests) add up; one single connection stays on one link.
+3. Diagnose: explains why USB tethering or Combine is not working, with the action that fixes each problem.
+
+Every action is available four ways with the same names and JSON:
+- Menu bar app: Ply.app
+- CLI: `ply <command>` (add `--json` for machine output). If `ply` is not on PATH, use `/Applications/Ply.app/Contents/Helpers/ply`.
+- MCP (stdio): `ply mcp`; tools are named `ply_<action>`
+- HTTP: `POST http://127.0.0.1:7590/v1/actions/<action>` with `Authorization: Bearer $(cat ~/Library/Application\ Support/Ply/api-token)`. OpenAPI: `GET /openapi.json`.
+
+## Actions
+- `status`: Which connection the Mac is using right now, every link with its live speed, the macOS service order, Combine state, helper state and findings. CLI `ply status [--json|--md]` · MCP `ply_status` · API `POST /v1/actions/status`
+- `diagnose`: Explain why iPhone USB or Combine is not working and how to fix it. Each finding names the action that fixes it and includes a ready-to-paste agent prompt. CLI `ply diagnose [--json]` · MCP `ply_diagnose` · API `POST /v1/actions/diagnose`
+- `agent_prompt`: A self-contained prompt that describes this Mac's connection state and how to drive Ply, for pasting into any AI agent. CLI `ply agent-prompt` · MCP `ply_agent_prompt` · API `POST /v1/actions/agent_prompt`
+- `prefer_usb`: Move every iPhone USB network service above Wi-Fi in macOS's service order and turn off macOS's "Disable unless needed" switch for it, so the cable is used whenever it is connected. Needs the helper. CLI `ply prefer-usb` · MCP `ply_prefer_usb` · API `POST /v1/actions/prefer_usb`
+- `combine_start`: Start Combine: a local proxy on 127.0.0.1:7591 spreads new connections across every link with internet (Wi-Fi, iPhone USB, Ethernet) and, with systemProxy, points macOS's auto-proxy at it. A single download stays on one link; many connections add up. CLI `ply combine on [--split connection|site] [--no-system-proxy]` · MCP `ply_combine_start` · API `POST /v1/actions/combine_start`
+- `combine_stop`: Stop Combine and restore the proxy settings Ply changed. CLI `ply combine off` · MCP `ply_combine_stop` · API `POST /v1/actions/combine_stop`
+- `speed_test`: Measure download speed on each link alone and on all links at once. Uses mobile data on the iPhone link (capped by speedTestMaxMB per link per phase). CLI `ply speedtest [--seconds 5] [--mode both]` · MCP `ply_speed_test` · API `POST /v1/actions/speed_test`
+- `set_wifi_power`: Turn the Mac's Wi-Fi radio on or off. CLI `ply wifi on|off` · MCP `ply_set_wifi_power` · API `POST /v1/actions/set_wifi_power`
+- `disconnect_wifi`: Disconnect Wi-Fi from its current network (for example the iPhone's own Wi-Fi hotspot) without turning Wi-Fi off. CLI `ply wifi disconnect` · MCP `ply_disconnect_wifi` · API `POST /v1/actions/disconnect_wifi`
+- `get_settings`: Read Ply's settings. CLI `ply settings` · MCP `ply_get_settings` · API `POST /v1/actions/get_settings`
+- `update_settings`: Change one or more settings. Pass only the keys to change. CLI `ply settings set key=value [key=value ...]` · MCP `ply_update_settings` · API `POST /v1/actions/update_settings`
+- `repair_tether`: Turn each iPhone USB network service off and on again to wake a tether that is plugged in but not getting an address. Needs the helper. CLI `ply repair` · MCP `ply_repair_tether` · API `POST /v1/actions/repair_tether`
+- `restore_proxies`: Put back every macOS proxy setting Ply changed. Safe to run any time. CLI `ply restore-proxies` · MCP `ply_restore_proxies` · API `POST /v1/actions/restore_proxies`
+- `install_helper`: Install Ply's small root helper and the `ply` command (asks for an admin password once). The helper can only reorder network services, point proxies at Ply's local PAC file, restore them, and toggle one service. CLI `ply helper install (or: sudo ply helper install)` · MCP `ply_install_helper` · API `POST /v1/actions/install_helper`
+- `uninstall_helper`: Restore proxies, then remove the helper, its LaunchDaemon and the /usr/local/bin/ply link. CLI `ply helper uninstall` · MCP `ply_uninstall_helper` · API `POST /v1/actions/uninstall_helper`
+- `set_launch_at_login`: Start the Ply menu bar app when you log in. CLI `ply login-item on|off` · MCP `ply_set_launch_at_login` · API `POST /v1/actions/set_launch_at_login`
+- `show_window`: Open Ply's window on the user's screen, with the same controls as the menu bar menu. Use it to show the user what Ply is doing, or when the menu bar icon is hidden because the menu bar is full (common on MacBooks with a notch). Opens Ply.app first if it is not running. CLI `ply open` · MCP `ply_show_window` · API `POST /v1/actions/show_window`
+- `about`: Version, license, source code and documentation links. CLI `ply about` · MCP `ply_about` · API `POST /v1/actions/about`
+- `quit`: Stop the running Ply engine (app or daemon), restoring any proxy settings first. CLI `ply quit` · MCP `ply_quit` · API `POST /v1/actions/quit`
+
+## Docs
+
+- [Full agent reference](https://github.com/mustafaTokmak/ply/blob/main/docs/llms-full.txt)
+- [Agent skill](https://github.com/mustafaTokmak/ply/blob/main/skills/ply/SKILL.md)
+- [OpenAPI](https://github.com/mustafaTokmak/ply/blob/main/docs/openapi.json)
+- [README](https://github.com/mustafaTokmak/ply#readme)
+
+## Setup
+
+- Install: download Ply.app from https://github.com/mustafaTokmak/ply/releases, move it to /Applications, open it. It lives in the menu bar.
+- Helper: changing macOS's service order or proxy settings needs admin rights. Run `install_helper` once (`ply helper install`, or `sudo ply helper install` over SSH). It installs a root LaunchDaemon (`app.ply.helper`) that can only reorder services, point services' auto-proxy at `http://127.0.0.1:7590/proxy.pac`, restore the old proxy settings, and enable/disable one service. It also links the CLI to /usr/local/bin/ply.
+- Engine: the app runs the engine. Without the app, `ply daemon` runs the same engine headless. CLI and MCP calls start one automatically for actions that need it (`combine_start`); read-only actions work without one.
+
+## Action reference
+### status
+
+Which connection the Mac is using right now, every link with its live speed, the macOS service order, Combine state, helper state and findings.
+
+- Title in the app: Status
+- CLI: `ply status [--json|--md]`
+- MCP tool: `ply_status`
+- HTTP: `POST /v1/actions/status` (also `GET`)
+- Read-only: yes
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+### diagnose
+
+Explain why iPhone USB or Combine is not working and how to fix it. Each finding names the action that fixes it and includes a ready-to-paste agent prompt.
+
+- Title in the app: Diagnose
+- CLI: `ply diagnose [--json]`
+- MCP tool: `ply_diagnose`
+- HTTP: `POST /v1/actions/diagnose` (also `GET`)
+- Read-only: yes
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+### agent_prompt
+
+A self-contained prompt that describes this Mac's connection state and how to drive Ply, for pasting into any AI agent.
+
+- Title in the app: Copy agent prompt
+- CLI: `ply agent-prompt`
+- MCP tool: `ply_agent_prompt`
+- HTTP: `POST /v1/actions/agent_prompt` (also `GET`)
+- Read-only: yes
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+### prefer_usb
+
+Move every iPhone USB network service above Wi-Fi in macOS's service order and turn off macOS's "Disable unless needed" switch for it, so the cable is used whenever it is connected. Needs the helper.
+
+- Title in the app: Put iPhone USB first
+- CLI: `ply prefer-usb`
+- MCP tool: `ply_prefer_usb`
+- HTTP: `POST /v1/actions/prefer_usb`
+- Read-only: no
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+### combine_start
+
+Start Combine: a local proxy on 127.0.0.1:7591 spreads new connections across every link with internet (Wi-Fi, iPhone USB, Ethernet) and, with systemProxy, points macOS's auto-proxy at it. A single download stays on one link; many connections add up.
+
+- Title in the app: Combine Wi-Fi + iPhone
+- CLI: `ply combine on [--split connection|site] [--no-system-proxy]`
+- MCP tool: `ply_combine_start`
+- HTTP: `POST /v1/actions/combine_start`
+- Read-only: no
+- Runs: in the Ply engine (app or `ply daemon`); CLI/MCP start one if needed
+- Parameters:
+  - `split` (connection|site): connection (fastest) or site (one link per site). Saved as the split setting.
+  - `systemProxy` (boolean): Override the systemProxy setting for this run.
+
+### combine_stop
+
+Stop Combine and restore the proxy settings Ply changed.
+
+- Title in the app: Stop combining
+- CLI: `ply combine off`
+- MCP tool: `ply_combine_stop`
+- HTTP: `POST /v1/actions/combine_stop`
+- Read-only: no
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+### speed_test
+
+Measure download speed on each link alone and on all links at once. Uses mobile data on the iPhone link (capped by speedTestMaxMB per link per phase).
+
+- Title in the app: Speed test
+- CLI: `ply speedtest [--seconds 5] [--mode both]`
+- MCP tool: `ply_speed_test`
+- HTTP: `POST /v1/actions/speed_test` (also `GET`)
+- Read-only: yes
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters:
+  - `seconds` (integer): Seconds per phase, 2 to 15. Default 5.
+  - `mode` (each|combined|both): each = every link alone, combined = all links together, both (default).
+
+### set_wifi_power
+
+Turn the Mac's Wi-Fi radio on or off.
+
+- Title in the app: Wi-Fi power
+- CLI: `ply wifi on|off`
+- MCP tool: `ply_set_wifi_power`
+- HTTP: `POST /v1/actions/set_wifi_power`
+- Read-only: no
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters:
+  - `on` (boolean, required): true to turn Wi-Fi on, false to turn it off.
+
+### disconnect_wifi
+
+Disconnect Wi-Fi from its current network (for example the iPhone's own Wi-Fi hotspot) without turning Wi-Fi off.
+
+- Title in the app: Leave Wi-Fi network
+- CLI: `ply wifi disconnect`
+- MCP tool: `ply_disconnect_wifi`
+- HTTP: `POST /v1/actions/disconnect_wifi`
+- Read-only: no
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+### get_settings
+
+Read Ply's settings.
+
+- Title in the app: Settings
+- CLI: `ply settings`
+- MCP tool: `ply_get_settings`
+- HTTP: `POST /v1/actions/get_settings` (also `GET`)
+- Read-only: yes
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+### update_settings
+
+Change one or more settings. Pass only the keys to change.
+
+- Title in the app: Change settings
+- CLI: `ply settings set key=value [key=value ...]`
+- MCP tool: `ply_update_settings`
+- HTTP: `POST /v1/actions/update_settings`
+- Read-only: no
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters:
+  - `preferUSB` (boolean): Keep iPhone USB above Wi-Fi in macOS's service order and turn off its "Disable unless needed" switch, so the cable wins whenever it is connected. Needs the helper. Default true.
+  - `leaveIPhoneWiFiWhenUSB` (boolean): If the Mac joins the iPhone's Wi-Fi hotspot while USB is up, leave it (frees Wi-Fi for a real network). Skipped while combining. Default true.
+  - `wifiOffWhenUSB` (boolean): Turn Wi-Fi off while iPhone USB is up and back on when it goes away. Ignored while combining. Default false.
+  - `combineAuto` (boolean): Start Combine automatically when iPhone USB and another link (Wi-Fi or Ethernet) both have internet. Default false.
+  - `split` (connection|site): How Combine spreads traffic: 'connection' (fastest, per connection) or 'site' (one link per site for 10 minutes). Default connection.
+  - `systemProxy` (boolean): While combining, point macOS's auto-proxy (PAC) at Ply so browsers and most apps use both links. Needs the helper. Default true.
+  - `tetherInterfaces` (string[]): Extra BSD interface names (e.g. en9) to treat as a phone tether, for Android or other USB modems.
+  - `speedTestURL` (string): HTTPS download URL used by speed_test. Default is Cloudflare's speed endpoint.
+  - `speedTestMaxMB` (integer): Most megabytes speed_test may download per link per phase (mobile data). 5 to 500. Default 40.
+
+### repair_tether
+
+Turn each iPhone USB network service off and on again to wake a tether that is plugged in but not getting an address. Needs the helper.
+
+- Title in the app: Repair iPhone USB
+- CLI: `ply repair`
+- MCP tool: `ply_repair_tether`
+- HTTP: `POST /v1/actions/repair_tether`
+- Read-only: no
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+### restore_proxies
+
+Put back every macOS proxy setting Ply changed. Safe to run any time.
+
+- Title in the app: Restore proxy settings
+- CLI: `ply restore-proxies`
+- MCP tool: `ply_restore_proxies`
+- HTTP: `POST /v1/actions/restore_proxies`
+- Read-only: no
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+### install_helper
+
+Install Ply's small root helper and the `ply` command (asks for an admin password once). The helper can only reorder network services, point proxies at Ply's local PAC file, restore them, and toggle one service.
+
+- Title in the app: Install helper
+- CLI: `ply helper install (or: sudo ply helper install)`
+- MCP tool: `ply_install_helper`
+- HTTP: `POST /v1/actions/install_helper`
+- Read-only: no
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+### uninstall_helper
+
+Restore proxies, then remove the helper, its LaunchDaemon and the /usr/local/bin/ply link.
+
+- Title in the app: Uninstall helper
+- CLI: `ply helper uninstall`
+- MCP tool: `ply_uninstall_helper`
+- HTTP: `POST /v1/actions/uninstall_helper`
+- Read-only: no
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+### set_launch_at_login
+
+Start the Ply menu bar app when you log in.
+
+- Title in the app: Open at login
+- CLI: `ply login-item on|off`
+- MCP tool: `ply_set_launch_at_login`
+- HTTP: `POST /v1/actions/set_launch_at_login`
+- Read-only: no
+- Runs: only in the Ply menu bar app
+- Parameters:
+  - `on` (boolean, required): true to open at login.
+
+### show_window
+
+Open Ply's window on the user's screen, with the same controls as the menu bar menu. Use it to show the user what Ply is doing, or when the menu bar icon is hidden because the menu bar is full (common on MacBooks with a notch). Opens Ply.app first if it is not running.
+
+- Title in the app: Open Ply window
+- CLI: `ply open`
+- MCP tool: `ply_show_window`
+- HTTP: `POST /v1/actions/show_window`
+- Read-only: no
+- Runs: only in the Ply menu bar app
+- Parameters: none
+
+### about
+
+Version, license, source code and documentation links.
+
+- Title in the app: About Ply
+- CLI: `ply about`
+- MCP tool: `ply_about`
+- HTTP: `POST /v1/actions/about` (also `GET`)
+- Read-only: yes
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+### quit
+
+Stop the running Ply engine (app or daemon), restoring any proxy settings first.
+
+- Title in the app: Quit Ply
+- CLI: `ply quit`
+- MCP tool: `ply_quit`
+- HTTP: `POST /v1/actions/quit`
+- Read-only: no
+- Runs: anywhere, including a one-shot CLI/MCP call with no app open
+- Parameters: none
+
+## Settings
+
+- `preferUSB` (boolean): Keep iPhone USB above Wi-Fi in macOS's service order and turn off its "Disable unless needed" switch, so the cable wins whenever it is connected. Needs the helper. Default true.
+- `leaveIPhoneWiFiWhenUSB` (boolean): If the Mac joins the iPhone's Wi-Fi hotspot while USB is up, leave it (frees Wi-Fi for a real network). Skipped while combining. Default true.
+- `wifiOffWhenUSB` (boolean): Turn Wi-Fi off while iPhone USB is up and back on when it goes away. Ignored while combining. Default false.
+- `combineAuto` (boolean): Start Combine automatically when iPhone USB and another link (Wi-Fi or Ethernet) both have internet. Default false.
+- `split` (connection|site): How Combine spreads traffic: 'connection' (fastest, per connection) or 'site' (one link per site for 10 minutes). Default connection.
+- `systemProxy` (boolean): While combining, point macOS's auto-proxy (PAC) at Ply so browsers and most apps use both links. Needs the helper. Default true.
+- `tetherInterfaces` (string[]): Extra BSD interface names (e.g. en9) to treat as a phone tether, for Android or other USB modems.
+- `speedTestURL` (string): HTTPS download URL used by speed_test. Default is Cloudflare's speed endpoint.
+- `speedTestMaxMB` (integer): Most megabytes speed_test may download per link per phase (mobile data). 5 to 500. Default 40.
+
+## HTTP endpoints
+- `GET /health`: Liveness: {app, version, engine}. No token needed.
+- `GET /llms.txt`: Agent overview of Ply. No token needed.
+- `GET /llms-full.txt`: Full agent reference. No token needed.
+- `GET /SKILL.md`: Agent skill for Ply's main workflows. No token needed.
+- `GET /openapi.json`: OpenAPI 3.1 description of this API. No token needed.
+- `GET /proxy.pac`: Proxy auto-config used by Combine. No token needed.
+- `GET /v1/status`: Same as POST /v1/actions/status.
+- `GET /v1/status.md`: Status as Markdown.
+- `GET /v1/actions`: Every action with its JSON input schema.
+- `POST /v1/actions/status`: Which connection the Mac is using right now, every link with its live speed, the macOS service order, Combine state, helper state and findings.
+- `POST /v1/actions/diagnose`: Explain why iPhone USB or Combine is not working and how to fix it. Each finding names the action that fixes it and includes a ready-to-paste agent prompt.
+- `POST /v1/actions/agent_prompt`: A self-contained prompt that describes this Mac's connection state and how to drive Ply, for pasting into any AI agent.
+- `POST /v1/actions/prefer_usb`: Move every iPhone USB network service above Wi-Fi in macOS's service order and turn off macOS's "Disable unless needed" switch for it, so the cable is used whenever it is connected. Needs the helper.
+- `POST /v1/actions/combine_start`: Start Combine: a local proxy on 127.0.0.1:7591 spreads new connections across every link with internet (Wi-Fi, iPhone USB, Ethernet) and, with systemProxy, points macOS's auto-proxy at it. A single download stays on one link; many connections add up.
+- `POST /v1/actions/combine_stop`: Stop Combine and restore the proxy settings Ply changed.
+- `POST /v1/actions/speed_test`: Measure download speed on each link alone and on all links at once. Uses mobile data on the iPhone link (capped by speedTestMaxMB per link per phase).
+- `POST /v1/actions/set_wifi_power`: Turn the Mac's Wi-Fi radio on or off.
+- `POST /v1/actions/disconnect_wifi`: Disconnect Wi-Fi from its current network (for example the iPhone's own Wi-Fi hotspot) without turning Wi-Fi off.
+- `POST /v1/actions/get_settings`: Read Ply's settings.
+- `POST /v1/actions/update_settings`: Change one or more settings. Pass only the keys to change.
+- `POST /v1/actions/repair_tether`: Turn each iPhone USB network service off and on again to wake a tether that is plugged in but not getting an address. Needs the helper.
+- `POST /v1/actions/restore_proxies`: Put back every macOS proxy setting Ply changed. Safe to run any time.
+- `POST /v1/actions/install_helper`: Install Ply's small root helper and the `ply` command (asks for an admin password once). The helper can only reorder network services, point proxies at Ply's local PAC file, restore them, and toggle one service.
+- `POST /v1/actions/uninstall_helper`: Restore proxies, then remove the helper, its LaunchDaemon and the /usr/local/bin/ply link.
+- `POST /v1/actions/set_launch_at_login`: Start the Ply menu bar app when you log in.
+- `POST /v1/actions/show_window`: Open Ply's window on the user's screen, with the same controls as the menu bar menu. Use it to show the user what Ply is doing, or when the menu bar icon is hidden because the menu bar is full (common on MacBooks with a notch). Opens Ply.app first if it is not running.
+- `POST /v1/actions/about`: Version, license, source code and documentation links.
+- `POST /v1/actions/quit`: Stop the running Ply engine (app or daemon), restoring any proxy settings first.
+
+Errors are JSON: `{"ok": false, "error": "...", "code": "bad_request|needs_helper|unavailable|failed", "fix": "<action>"}`. `fix` names the action that resolves the error, when there is one.
+
+## Status fields (status action)
+
+- `summary`: one line, e.g. "Internet via iPhone USB" or "Combining Wi-Fi + iPhone USB".
+- `primary`: BSD name of the interface macOS routes through (e.g. en7).
+- `links[]`: `{bsd, name, kind: wifi|tether|ethernet, up, primary, iphoneHotspot, ipv4, router, rxBps, txBps}`.
+- `usb.state`: `not-connected` | `plugged-in-no-hotspot` | `plugged-in-idle` (macOS keeps the cable idle because "Disable unless needed" is on; fix with `prefer_usb`) | `active`.
+- `serviceOrder[]`: macOS network services in priority order, with `kind`.
+- `combine`: `{running, split, systemProxy, activeFlows, totalFlows, healthyLinks, links[{bsd, health, activeFlows, bytesIn, bytesOut, inBps, outBps}]}`.
+- `helper`: `{installed, running, version, needsUpdate}`.
+- `findings[]`: `{id, severity: ok|info|warn|error, title, detail, fix, agentPrompt}`.
+- `events[]`: what Ply did recently (newest first).
+
+## Common tasks
+
+- "Make my Mac use the iPhone over USB": `ply diagnose --json`, then `ply prefer-usb` (install the helper first if asked), then `ply status --json` and check `primary` is the tether link.
+- "Make my internet faster with Wi-Fi + phone": plug in the iPhone with Personal Hotspot on, keep Wi-Fi on a different network, run `ply combine on`, then `ply speedtest` to compare each link alone with both together.
+- "Stop everything": `ply combine off` (restores proxy settings), or `ply quit`.
+
+## Limits
+
+- Combine works per connection. One single TCP stream (one big download) uses one link. True single-stream bonding needs a server on the other side and is not part of Ply.
+- Combine reaches apps through macOS's proxy settings (PAC). Browsers, most apps and URLSession honor it. UDP (QUIC, games, video calls) and apps that ignore system proxies use the primary link, which is iPhone USB when USB first is on.
+- If Wi-Fi and the tether reach the internet through the same iPhone, combining adds nothing.
+- Speed tests and Combine use mobile data on the iPhone link.
