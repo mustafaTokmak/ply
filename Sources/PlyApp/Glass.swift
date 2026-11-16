@@ -6,6 +6,14 @@ import SwiftUI
 enum Brand {
     /// The one solid accent: switches, prominent buttons, selection.
     static let accent = Color(red: 0.72, green: 0.24, blue: 0.95)
+    /// How much window color sits on the clear glass (picked by eye: 37% window, 59% cards).
+    static let windowFill = 0.37, cardFill = 0.59
+
+    static func fill(cornerRadius: CGFloat, opacity: Double) -> some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(Color(nsColor: .windowBackgroundColor).opacity(opacity))
+            .allowsHitTesting(false)
+    }
 }
 
 extension View {
@@ -14,7 +22,7 @@ extension View {
     func glassCard(cornerRadius: CGFloat = 16, tint: Color? = nil) -> some View {
         #if compiler(>=6.2)
         if #available(macOS 26.0, *) {
-            self.glassEffect(tint.map { Glass.clear.tint($0.opacity(0.25)) } ?? .clear, in: .rect(cornerRadius: cornerRadius))
+            self.background(Brand.fill(cornerRadius: cornerRadius, opacity: Brand.cardFill)).glassEffect(tint.map { Glass.clear.tint($0.opacity(0.25)) } ?? .clear, in: .rect(cornerRadius: cornerRadius))
         } else {
             materialCard(cornerRadius: cornerRadius, tint: tint)
         }

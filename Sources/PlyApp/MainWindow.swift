@@ -23,6 +23,7 @@ final class MainWindow {
                     .frame(width: 316, alignment: .leading)
                     .padding(12)
             }
+            .background(Brand.fill(cornerRadius: 26, opacity: Brand.windowFill))
             let host = NSHostingView(rootView: root)
             let size = host.fittingSize
             let w = NSWindow(contentRect: NSRect(origin: .zero, size: size),
@@ -48,7 +49,7 @@ final class MainWindow {
         if #available(macOS 26.0, *) {
             let glass = NSGlassEffectView()
             glass.cornerRadius = 26
-            glass.style = .regular
+            glass.style = .clear
             glass.contentView = content
             return glass
         }
