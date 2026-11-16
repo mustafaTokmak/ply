@@ -31,7 +31,7 @@ struct MenuView: View {
             Spacer()
             if let s = model.status {
                 SettingPicker(key: "uiMode", options: [("simple", "Simple"), ("advanced", "Advanced")], value: s.settings.uiMode.rawValue)
-                    .frame(width: 150)
+                    .frame(width: 190)
             }
         }
     }
@@ -115,7 +115,7 @@ struct MenuView: View {
     private func combineSection(_ s: StatusReport) -> some View {
         MenuSection(title: "Combine") {
             ActionToggle(title: "Combine Wi-Fi + iPhone", isOn: s.combine.running, on: .combineStart, off: .combineStop)
-            SettingPicker(key: "split", options: [("connection", "Fastest (per connection)"), ("site", "Per site")], value: s.settings.split.rawValue)
+            SettingPicker(key: "split", options: [("connection", "Fastest"), ("site", "Per site")], value: s.settings.split.rawValue)
             SettingToggle(key: "combineAuto", title: "Combine automatically when both are up", value: s.settings.combineAuto)
             if s.combine.running {
                 Text("\(s.combine.activeFlows) active connections over \(s.combine.healthyLinks) healthy link\(s.combine.healthyLinks == 1 ? "" : "s")")

@@ -214,14 +214,9 @@ struct SettingPicker: View {
     @EnvironmentObject var model: AppModel
 
     var body: some View {
-        Picker("", selection: Binding(get: { value }, set: { new in
+        PlySegments(options: options, value: value) { new in
             Task { _ = await model.run(.updateSettings, [key: .string(new)]) }
-        })) {
-            ForEach(options, id: \.value) { o in Text(o.label).tag(o.value) }
         }
-        .pickerStyle(.segmented)
-        .labelsHidden()
-        .controlSize(.small)
         .help(PlyCore.Settings.fields.first { $0.key == key }?.summary ?? "")
     }
 }
@@ -261,9 +256,9 @@ private struct PlySwitch: View {
     private func track(width: CGFloat, height: CGFloat) -> some View {
         #if compiler(>=6.2)
         if #available(macOS 26.0, *) {
-            Capsule().fill(isOn ? Brand.accent : Color.primary.opacity(0.08))
+            Capsule().fill(isOn ? Brand.accent : Color.primary.opacity(0.06))
                 .frame(width: width, height: height)
-                .glassEffect(isOn ? Glass.regular.tint(Brand.accent).interactive() : Glass.regular.interactive(), in: Capsule())
+                .glassEffect(isOn ? Glass.clear.tint(Brand.accent).interactive() : Glass.clear.interactive(), in: Capsule())
         } else {
             plainTrack(width: width, height: height)
         }
@@ -274,5 +269,55 @@ private struct PlySwitch: View {
 
     private func plainTrack(width: CGFloat, height: CGFloat) -> some View {
         Capsule().fill(isOn ? Brand.accent : Color.primary.opacity(0.15)).frame(width: width, height: height)
+    }
+}
+
+/// Ply's own segmented choice: a clear glass capsule with a solid accent pill that slides to the selection.
+private struct PlySegments: View {
+    let options: [(value: String, label: String)]
+    let value: String
+    let set: (String) -> Void
+    @Namespace private var pill
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(options, id: \.value) { o in
+                Button { if o.value != value { set(o.value) } } label: {
+                    Text(o.label)
+                        .font(.callout.weight(o.value == value ? .semibold : .regular))
+                        .foregroundStyle(o.value == value ? Color.white : Color.primary)
+                        .lineLimit(1)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .frame(maxWidth: .infinity)
+                        .background {
+                            if o.value == value {
+                                Capsule().fill(Brand.accent).matchedGeometryEffect(id: "pill", in: pill)
+                            }
+                        }
+                        .contentShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(o.value == value ? .isSelected : [])
+            }
+        }
+        .padding(3)
+        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: value)
+        .glassCapsule()
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func glassCapsule() -> some View {
+        #if compiler(>=6.2)
+        if #available(macOS 26.0, *) {
+            glassEffect(Glass.clear.interactive(), in: Capsule())
+        } else {
+            background(Capsule().fill(Color.primary.opacity(0.08)))
+        }
+        #else
+        background(Capsule().fill(Color.primary.opacity(0.08)))
+        #endif
     }
 }

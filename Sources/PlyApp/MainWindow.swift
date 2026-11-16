@@ -48,6 +48,7 @@ final class MainWindow {
         if #available(macOS 26.0, *) {
             let glass = NSGlassEffectView()
             glass.cornerRadius = 26
+            glass.style = .clear
             glass.contentView = content
             return glass
         }

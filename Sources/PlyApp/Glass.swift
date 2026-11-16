@@ -14,7 +14,7 @@ extension View {
     func glassCard(cornerRadius: CGFloat = 16, tint: Color? = nil) -> some View {
         #if compiler(>=6.2)
         if #available(macOS 26.0, *) {
-            self.glassEffect(tint.map { Glass.regular.tint($0.opacity(0.22)) } ?? .regular, in: .rect(cornerRadius: cornerRadius))
+            self.glassEffect(tint.map { Glass.clear.tint($0.opacity(0.25)) } ?? .clear, in: .rect(cornerRadius: cornerRadius))
         } else {
             materialCard(cornerRadius: cornerRadius, tint: tint)
         }
