@@ -12,10 +12,10 @@ There's no VPN, no account and no server. Everything runs on your Mac.
 **Built for AI agents first.** Everything you can click in Ply, an agent can do too: every control is an MCP tool, a CLI command and a local HTTP endpoint, all generated from one action list. A test fails the build if the app ever gets a control that agents can't use, or if these docs drift from the code. Agents: start at [For AI agents](#for-ai-agents).
 
 <p align="center">
-  <img src="docs/images/menu-usb-light.png" width="320" alt="Ply menu: internet via iPhone USB">
-  <img src="docs/images/menu-combine-dark.png" width="320" alt="Ply menu: combining Wi-Fi and iPhone USB">
+  <img src="docs/images/menu-simple.png" width="380" alt="Ply in Simple mode: iPhone cable first, Wi-Fi + iPhone together, and a speed test, each with its own switch">
+  <img src="docs/images/menu-advanced.png" width="380" alt="Ply in Advanced mode: both links with live speeds, and every USB-first, combine and speed setting">
 </p>
-<p align="center"><sub>The real menu, rendered with example data.</sub></p>
+<p align="center"><sub>Simple and Advanced mode, captured from the running app on macOS 26 with an iPhone on the cable.</sub></p>
 
 ## For AI agents
 
@@ -96,6 +96,7 @@ Everything. The menu, the window, the CLI, the HTTP API and the MCP server all r
 | **Turn Wi-Fi off while cabled** | Optional. Ply turns Wi-Fi back on when you unplug. |
 | **Combine Wi-Fi + iPhone** | A local proxy (`127.0.0.1:7591`) sends each new connection over the least-loaded link that has internet. Ply points macOS's auto-proxy (PAC) at it, so browsers and most apps use it with no setup. |
 | **Speed test** | Measures each link alone and all links together, bound to each interface. |
+| **Simple and Advanced** | Simple shows the two main switches and a speed test. Advanced shows each link with live speeds and every setting. |
 | **Diagnose** | Explains what's wrong ("iPhone is plugged in but not sharing", "Wi-Fi is above iPhone USB", ...), with a one-click fix and a ready-to-paste prompt for an AI agent. |
 
 ### How Combine works, and what it can't do
@@ -128,7 +129,7 @@ brew install mustafaTokmak/tap/ply
 **Or download it:**
 
 1. Download `Ply-<version>.zip` from [Releases](https://github.com/mustafaTokmak/ply/releases), unzip it, and move **Ply.app** to Applications.
-2. Open Ply. It lives in the menu bar (the cable icon). If your menu bar is full and the icon is hidden behind the notch, Ply opens its window instead; open Ply again (or run `ply open`) to bring the window back.
+2. Open Ply. It lives in the menu bar (an iPhone with a link). If your menu bar is full and the icon is hidden behind the notch, Ply opens its window instead; open Ply again (or run `ply open`) to bring the window back.
 3. Click **Install helper** once and enter your admin password. macOS requires admin rights to change the network service order and proxy settings. See [Security](#security) for what the helper can and can't do.
 
 On iPhone: **Settings → Personal Hotspot → Allow Others to Join**. Then plug in the cable and tap **Trust** if asked.
