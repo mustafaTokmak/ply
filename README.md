@@ -26,7 +26,7 @@ Ply is meant to be driven by an agent (Claude Code, Codex, Cursor, any MCP clien
 | Interface | How |
 | --- | --- |
 | **MCP** (stdio) | `claude mcp add ply -- /Applications/Ply.app/Contents/Helpers/ply mcp`. Tools are named `ply_<action>` and return structured JSON. |
-| **CLI** | `ply <command> --json`. `ply` is linked into `/usr/local/bin` when the helper is installed; before that use `/Applications/Ply.app/Contents/Helpers/ply`. `ply actions --json` lists every action with its input schema; `ply action <id> '{"param": ...}'` runs any of them. |
+| **CLI** | `ply <command> --json`. Install with `brew install mustafaTokmak/tap/ply`, which puts `ply` on PATH. Without Homebrew, `ply` is linked into `/usr/local/bin` when the helper is installed; before that use `/Applications/Ply.app/Contents/Helpers/ply`. `ply actions --json` lists every action with its input schema; `ply action <id> '{"param": ...}'` runs any of them. |
 | **HTTP** | `POST http://127.0.0.1:7590/v1/actions/<action>` with a JSON body and `Authorization: Bearer $(cat ~/Library/Application\ Support/Ply/api-token)`. The API listens on 127.0.0.1 only. |
 | **OpenAPI** | [`docs/openapi.json`](docs/openapi.json), also served at `GET http://127.0.0.1:7590/openapi.json`. |
 | **Docs** | [`docs/llms.txt`](docs/llms.txt), [`docs/llms-full.txt`](docs/llms-full.txt) (every action, parameter, setting, status field and error), [`skills/ply/SKILL.md`](skills/ply/SKILL.md). Also served at `/llms.txt`, `/llms-full.txt` and `/SKILL.md`. |
@@ -118,6 +118,14 @@ Everything. The menu, the window, the CLI, the HTTP API and the MCP server all r
 - Combine and speed tests use mobile data on the iPhone link.
 
 ## Install
+
+**Homebrew** (installs the app and the `ply` command):
+
+```sh
+brew install mustafaTokmak/tap/ply
+```
+
+**Or download it:**
 
 1. Download `Ply-<version>.zip` from [Releases](https://github.com/mustafaTokmak/ply/releases), unzip it, and move **Ply.app** to Applications.
 2. Open Ply. It lives in the menu bar (the cable icon). If your menu bar is full and the icon is hidden behind the notch, Ply opens its window instead; open Ply again (or run `ply open`) to bring the window back.

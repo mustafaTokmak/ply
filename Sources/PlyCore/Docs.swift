@@ -49,7 +49,7 @@ public enum Docs {
 
         ## Setup
 
-        - Install: download Ply.app from \(PlyInfo.repoURL)/releases, move it to /Applications, open it. It lives in the menu bar.
+        - Install: `brew install mustafaTokmak/tap/ply` (app + `ply` on PATH), or download Ply.app from \(PlyInfo.repoURL)/releases, move it to /Applications, open it. It lives in the menu bar.
         - Helper: changing macOS's service order or proxy settings needs admin rights. Run `install_helper` once (`ply helper install`, or `sudo ply helper install` over SSH). It installs a root LaunchDaemon (`app.ply.helper`) that can only reorder services, point services' auto-proxy at `\(PlyInfo.pacURL)`, restore the old proxy settings, and enable/disable one service. It also links the CLI to /usr/local/bin/ply.
         - Engine: the app runs the engine. Without the app, `ply daemon` runs the same engine headless. CLI and MCP calls start one automatically for actions that need it (`combine_start`); read-only actions work without one.
 
