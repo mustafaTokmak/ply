@@ -36,7 +36,7 @@
   "info" : {
     "description" : "Ply is a free, open-source macOS menu bar app that keeps your Mac on your iPhone's USB hotspot instead of Wi-Fi, and can combine Wi-Fi + iPhone USB (and Ethernet) so many connections at once use every link. No VPN, no account, no server: everything runs on the Mac. The API listens only on 127.0.0.1. Send `Authorization: Bearer <token>`; the token is in ~/Library/Application Support/Ply/api-token.",
     "title" : "Ply local API",
-    "version" : "0.1.0"
+    "version" : "0.1.1"
   },
   "openapi" : "3.1.0",
   "paths" : {
