@@ -19,6 +19,9 @@ public final class Engine: @unchecked Sendable {
     let sampler = CounterSampler()
     var proxy: CombineProxy?
     var combineAutoStarted = false
+    /// Set when the user stops Combine while combineAuto is on, so it does not start again
+    /// right away; cleared once the links drop (it auto-starts the next time both are up).
+    var combineAutoPaused = false
     var systemProxyActive = false
     var combineWarning: String?
     var wifiTurnedOffByPly = false
@@ -195,6 +198,18 @@ public final class Engine: @unchecked Sendable {
         return OrderChange(changed: true, message: "iPhone USB " + done.joined(separator: " and ") + ".", order: names(snapshot.services.map(\.id)))
     }
 
+    /// Undo "iPhone USB first": put Wi-Fi back above iPhone USB, so macOS prefers Wi-Fi again.
+    func applyWiFiFirst() {
+        guard helper.isInstalled, let order = ServiceOrder.wifiFirst(snapshot.services) else { return }
+        do {
+            try helper.setOrder(order)
+            record("Moved Wi-Fi back above iPhone USB")
+            snapshot = NetworkInspector.snapshot(settings: settings)
+        } catch {
+            record("Could not move Wi-Fi above iPhone USB: \(error)")
+        }
+    }
+
     func applyWiFiRules() {
         let tetherUp = !snapshot.tetherUp.isEmpty
         let power = snapshot.wifi.power ?? false
@@ -225,7 +240,8 @@ public final class Engine: @unchecked Sendable {
     func applyCombineAuto() {
         let candidates = snapshot.combineCandidates
         let ready = candidates.count >= 2 && candidates.contains { $0.kind == .tether }
-        if settings.combineAuto && proxy == nil && ready {
+        if !ready { combineAutoPaused = false }
+        if settings.combineAuto && proxy == nil && ready && !combineAutoPaused {
             do {
                 _ = try startCombine(auto: true, systemProxy: nil)
                 record("Started Combine automatically (\(candidates.map(\.displayName).joined(separator: " + ")))")
@@ -404,6 +420,7 @@ public final class Engine: @unchecked Sendable {
                     self.settings.split = split
                     try? SettingsStore.save(self.settings)
                 }
+                self.combineAutoPaused = false
                 let r = try self.startCombine(auto: false, systemProxy: params["systemProxy"]?.boolValue)
                 self.record("Started Combine")
                 self.publish()
@@ -418,7 +435,8 @@ public final class Engine: @unchecked Sendable {
                 } else {
                     let wasRunning = self.proxy != nil
                     self.stopCombine()
-                    if wasRunning { self.record("Stopped Combine") }
+                    if self.settings.combineAuto { self.combineAutoPaused = true }
+                    if wasRunning { self.record(self.settings.combineAuto ? "Stopped Combine (it starts again automatically the next time both links connect)" : "Stopped Combine") }
                     self.publish()
                 }
                 return self.combineReport()
@@ -472,8 +490,11 @@ public final class Engine: @unchecked Sendable {
                 let next = try self.settings.merged(with: params)
                 try SettingsStore.save(next)
                 let splitChanged = next.split != self.settings.split
+                let usbFirstTurnedOff = self.settings.preferUSB && !next.preferUSB
+                if params["combineAuto"] != nil { self.combineAutoPaused = false }
                 self.settings = next
                 if splitChanged { self.proxy?.split = next.split }
+                if usbFirstTurnedOff && self.mode != .passive { self.applyWiFiFirst() }
                 if self.mode != .passive {
                     self.record("Settings changed: \(params.keys.sorted().joined(separator: ", "))")
                     self.evaluate()

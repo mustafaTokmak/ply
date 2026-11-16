@@ -16,6 +16,18 @@ public enum ServiceOrder {
         rest.insert(contentsOf: tether.map(\.id), at: insertAt)
         return rest
     }
+
+    /// The reverse, for when "iPhone USB first" is turned off: every phone-tether service moved
+    /// directly below the first Wi-Fi service, or nil when no tether service is above Wi-Fi.
+    public static func wifiFirst(_ services: [ServiceInfo]) -> [String]? {
+        guard let firstWiFi = services.firstIndex(where: { $0.kind == .wifi }) else { return nil }
+        let above = services[..<firstWiFi].filter { $0.kind == .tether }
+        guard !above.isEmpty else { return nil }
+        var rest = services.filter { s in !above.contains { $0.id == s.id } }.map(\.id)
+        guard let wifiAt = rest.firstIndex(of: services[firstWiFi].id) else { return nil }
+        rest.insert(contentsOf: above.map(\.id), at: wifiAt + 1)
+        return rest
+    }
 }
 
 public struct DiagnosisInput: Sendable {
@@ -73,7 +85,8 @@ public enum Diagnosis {
             }
         }
 
-        if !tetherUp.isEmpty, let primary = s.primary, primary.kind != .tether, ServiceOrder.usbFirst(s.services) != nil {
+        // Only when the user wants the cable first; with preferUSB off, Wi-Fi first is what they asked for.
+        if i.settings.preferUSB, !tetherUp.isEmpty, let primary = s.primary, primary.kind != .tether, ServiceOrder.usbFirst(s.services) != nil {
             add("wifi-first", .warn, "iPhone USB is connected but the Mac is using \(primary.displayName)",
                 "macOS uses the first connected service in its service order, and \(primary.displayName) is above iPhone USB. Ply can move iPhone USB above Wi-Fi.",
                 fix: i.helperInstalled ? .preferUSB : .installHelper)

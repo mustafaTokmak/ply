@@ -190,9 +190,10 @@ enum SpeedTester {
                     if let data, !data.isEmpty {
                         if !st.sawStatus {
                             st.sawStatus = true
-                            let head = String(decoding: data.prefix(16), as: UTF8.self)
+                            let head = String(decoding: data.prefix(64), as: UTF8.self)
                             if !head.hasPrefix("HTTP/1.1 200") && !head.hasPrefix("HTTP/1.0 200") {
-                                meter.fail("server answered \(head.trimmingCharacters(in: .whitespacesAndNewlines))")
+                                let status = head.components(separatedBy: "\r\n").first ?? head
+                                meter.fail(status.contains(" 429") ? "the test server is limiting this network (HTTP 429), try again in a few minutes" : "server answered \(status)")
                                 st.failed = true
                                 finish()
                                 return

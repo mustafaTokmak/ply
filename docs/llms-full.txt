@@ -184,10 +184,10 @@ Change one or more settings. Pass only the keys to change.
 - Read-only: no
 - Runs: anywhere, including a one-shot CLI/MCP call with no app open
 - Parameters:
-  - `preferUSB` (boolean): Keep iPhone USB above Wi-Fi in macOS's service order and turn off its "Disable unless needed" switch, so the cable wins whenever it is connected. Needs the helper. Default true.
+  - `preferUSB` (boolean): Keep iPhone USB above Wi-Fi in macOS's service order and turn off its "Disable unless needed" switch, so the cable wins whenever it is connected. Turning it off puts Wi-Fi back above iPhone USB. Needs the helper. Default true.
   - `leaveIPhoneWiFiWhenUSB` (boolean): If the Mac joins the iPhone's Wi-Fi hotspot while USB is up, leave it (frees Wi-Fi for a real network). Skipped while combining. Default true.
   - `wifiOffWhenUSB` (boolean): Turn Wi-Fi off while iPhone USB is up and back on when it goes away. Ignored while combining. Default false.
-  - `combineAuto` (boolean): Start Combine automatically when iPhone USB and another link (Wi-Fi or Ethernet) both have internet. Default false.
+  - `combineAuto` (boolean): Start Combine automatically when iPhone USB and another link (Wi-Fi or Ethernet) both have internet. Stopping Combine by hand keeps it off until a link drops and comes back. Default false.
   - `split` (connection|site): How Combine spreads traffic: 'connection' (fastest, per connection) or 'site' (one link per site for 10 minutes). Default connection.
   - `systemProxy` (boolean): While combining, point macOS's auto-proxy (PAC) at Ply so browsers and most apps use both links. Needs the helper. Default true.
   - `tetherInterfaces` (string[]): Extra BSD interface names (e.g. en9) to treat as a phone tether, for Android or other USB modems.
@@ -294,10 +294,10 @@ Stop the running Ply engine (app or daemon), restoring any proxy settings first.
 
 ## Settings
 
-- `preferUSB` (boolean): Keep iPhone USB above Wi-Fi in macOS's service order and turn off its "Disable unless needed" switch, so the cable wins whenever it is connected. Needs the helper. Default true.
+- `preferUSB` (boolean): Keep iPhone USB above Wi-Fi in macOS's service order and turn off its "Disable unless needed" switch, so the cable wins whenever it is connected. Turning it off puts Wi-Fi back above iPhone USB. Needs the helper. Default true.
 - `leaveIPhoneWiFiWhenUSB` (boolean): If the Mac joins the iPhone's Wi-Fi hotspot while USB is up, leave it (frees Wi-Fi for a real network). Skipped while combining. Default true.
 - `wifiOffWhenUSB` (boolean): Turn Wi-Fi off while iPhone USB is up and back on when it goes away. Ignored while combining. Default false.
-- `combineAuto` (boolean): Start Combine automatically when iPhone USB and another link (Wi-Fi or Ethernet) both have internet. Default false.
+- `combineAuto` (boolean): Start Combine automatically when iPhone USB and another link (Wi-Fi or Ethernet) both have internet. Stopping Combine by hand keeps it off until a link drops and comes back. Default false.
 - `split` (connection|site): How Combine spreads traffic: 'connection' (fastest, per connection) or 'site' (one link per site for 10 minutes). Default connection.
 - `systemProxy` (boolean): While combining, point macOS's auto-proxy (PAC) at Ply so browsers and most apps use both links. Needs the helper. Default true.
 - `tetherInterfaces` (string[]): Extra BSD interface names (e.g. en9) to treat as a phone tether, for Android or other USB modems.

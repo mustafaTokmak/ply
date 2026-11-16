@@ -1236,7 +1236,7 @@
                 "additionalProperties" : false,
                 "properties" : {
                   "combineAuto" : {
-                    "description" : "Start Combine automatically when iPhone USB and another link (Wi-Fi or Ethernet) both have internet. Default false.",
+                    "description" : "Start Combine automatically when iPhone USB and another link (Wi-Fi or Ethernet) both have internet. Stopping Combine by hand keeps it off until a link drops and comes back. Default false.",
                     "type" : "boolean"
                   },
                   "leaveIPhoneWiFiWhenUSB" : {
@@ -1244,7 +1244,7 @@
                     "type" : "boolean"
                   },
                   "preferUSB" : {
-                    "description" : "Keep iPhone USB above Wi-Fi in macOS's service order and turn off its \"Disable unless needed\" switch, so the cable wins whenever it is connected. Needs the helper. Default true.",
+                    "description" : "Keep iPhone USB above Wi-Fi in macOS's service order and turn off its \"Disable unless needed\" switch, so the cable wins whenever it is connected. Turning it off puts Wi-Fi back above iPhone USB. Needs the helper. Default true.",
                     "type" : "boolean"
                   },
                   "speedTestMaxMB" : {

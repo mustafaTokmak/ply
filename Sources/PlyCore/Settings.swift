@@ -55,10 +55,10 @@ public struct Settings: Codable, Equatable, Sendable {
 
     /// The documented settings. Used for validation, docs, the API schema and the MCP schema.
     public static let fields: [Field] = [
-        Field(key: "preferUSB", type: .bool, summary: "Keep iPhone USB above Wi-Fi in macOS's service order and turn off its \"Disable unless needed\" switch, so the cable wins whenever it is connected. Needs the helper. Default true."),
+        Field(key: "preferUSB", type: .bool, summary: "Keep iPhone USB above Wi-Fi in macOS's service order and turn off its \"Disable unless needed\" switch, so the cable wins whenever it is connected. Turning it off puts Wi-Fi back above iPhone USB. Needs the helper. Default true."),
         Field(key: "leaveIPhoneWiFiWhenUSB", type: .bool, summary: "If the Mac joins the iPhone's Wi-Fi hotspot while USB is up, leave it (frees Wi-Fi for a real network). Skipped while combining. Default true."),
         Field(key: "wifiOffWhenUSB", type: .bool, summary: "Turn Wi-Fi off while iPhone USB is up and back on when it goes away. Ignored while combining. Default false."),
-        Field(key: "combineAuto", type: .bool, summary: "Start Combine automatically when iPhone USB and another link (Wi-Fi or Ethernet) both have internet. Default false."),
+        Field(key: "combineAuto", type: .bool, summary: "Start Combine automatically when iPhone USB and another link (Wi-Fi or Ethernet) both have internet. Stopping Combine by hand keeps it off until a link drops and comes back. Default false."),
         Field(key: "split", type: .enumeration(SplitMode.allCases.map(\.rawValue)), summary: "How Combine spreads traffic: 'connection' (fastest, per connection) or 'site' (one link per site for 10 minutes). Default connection."),
         Field(key: "systemProxy", type: .bool, summary: "While combining, point macOS's auto-proxy (PAC) at Ply so browsers and most apps use both links. Needs the helper. Default true."),
         Field(key: "tetherInterfaces", type: .stringArray, summary: "Extra BSD interface names (e.g. en9) to treat as a phone tether, for Android or other USB modems."),

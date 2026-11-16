@@ -173,6 +173,13 @@ final class SettingsAndPolicyTests: XCTestCase {
         XCTAssertEqual(ServiceOrder.usbFirst([svc("eth", .ethernet), svc("wifi", .wifi), svc("usb", .tether)]), ["eth", "usb", "wifi"], "Ethernet keeps priority")
     }
 
+    func testWiFiFirstOrder() {
+        let s = [svc("tb", .other), svc("usb1", .tether), svc("usb2", .tether), svc("wifi", .wifi), svc("vpn", .other)]
+        XCTAssertEqual(ServiceOrder.wifiFirst(s), ["tb", "wifi", "usb1", "usb2", "vpn"])
+        XCTAssertNil(ServiceOrder.wifiFirst([svc("wifi", .wifi), svc("usb", .tether)]), "already right")
+        XCTAssertNil(ServiceOrder.wifiFirst([svc("usb", .tether), svc("eth", .ethernet)]), "no Wi-Fi")
+    }
+
     func testClassify() {
         XCTAssertEqual(NetworkInspector.classify(interfaceType: "IEEE80211", displayName: "Wi-Fi", serviceName: "Wi-Fi", bsd: "en0", router: "172.20.10.1", extraTether: []), .wifi)
         XCTAssertEqual(NetworkInspector.classify(interfaceType: "Ethernet", displayName: "iPhone USB", serviceName: "iPhone USB", bsd: "en7", router: nil, extraTether: []), .tether)
@@ -196,6 +203,10 @@ final class SettingsAndPolicyTests: XCTestCase {
         XCTAssertTrue(wf?.agentPrompt.contains("ply prefer-usb") ?? false)
         let noHelper = Diagnosis.findings(DiagnosisInput(snapshot: snap, settings: Settings(), helperInstalled: false, helperRunning: false, combineRunning: false, combineHealthyLinks: 0, engine: "app"))
         XCTAssertEqual(noHelper.first { $0.id == "wifi-first" }?.fix, .installHelper)
+        var wifiWanted = Settings()
+        wifiWanted.preferUSB = false
+        let off = Diagnosis.findings(DiagnosisInput(snapshot: snap, settings: wifiWanted, helperInstalled: true, helperRunning: true, combineRunning: false, combineHealthyLinks: 0, engine: "app"))
+        XCTAssertNil(off.first { $0.id == "wifi-first" }, "no warning when the user turned iPhone-first off")
     }
 
     func testDiagnosisHotspotOffAndOK() {
