@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0
+
+- New look: Liquid Glass on macOS 26, with Simple and Advanced modes. Simple shows iPhone cable first, Wi-Fi + iPhone together and a speed test, each with its own switch; Advanced shows each link and every setting. New setting `uiMode` (`simple` or `advanced`).
+- New menu bar icon: an iPhone with a link, so it no longer looks like the Wi-Fi icon.
+- iPhone cable first is unavailable while no iPhone is plugged in.
+- Turning iPhone cable first off now moves Wi-Fi back above iPhone USB.
+- Stopping Combine by hand keeps it off until a link drops and comes back, even with Combine automatically on.
+- Clearer speed test errors, for example when the test server limits requests.
+
 ## 0.1.1
 
 - New app icon.

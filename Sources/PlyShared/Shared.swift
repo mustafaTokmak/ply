@@ -4,7 +4,7 @@ import SystemConfiguration
 /// Names, paths and ports shared by the app, the CLI and the root helper.
 public enum PlyInfo {
     public static let name = "Ply"
-    public static let version = "0.1.1"
+    public static let version = "0.2.0"
     public static let bundleID = "app.ply.Ply"
     public static let repoURL = "https://github.com/mustafaTokmak/ply"
 
