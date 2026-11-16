@@ -18,7 +18,7 @@ struct PlyMenuBarApp: App {
             MenuView()
                 .environmentObject(model)
         } label: {
-            Image(systemName: model.menuBarSymbol)
+            Image(nsImage: MenuBarGlyph.image(model.menuBarGlyph))
                 .accessibilityLabel(model.status?.summary ?? "Ply")
         }
         .menuBarExtraStyle(.window)
@@ -70,17 +70,14 @@ final class AppModel: ObservableObject {
     private var api: APIServer?
     private let loginItem = LaunchAtLogin()
 
-    var menuBarSymbol: String {
-        guard let s = status else { return "cable.connector" }
-        if s.combine.running && s.combine.healthyLinks >= 2 { return "arrow.triangle.merge" }
-        if let p = s.links.first(where: { $0.primary }) {
-            switch p.kind {
-            case .tether: return "cable.connector"
-            case .wifi: return "wifi"
-            default: return "network"
-            }
+    var menuBarGlyph: MenuBarGlyph.State {
+        guard let s = status else { return .offline }
+        if s.combine.running && s.combine.healthyLinks >= 2 { return .combining }
+        switch s.links.first(where: { $0.primary })?.kind {
+        case .tether: return .cable
+        case .none: return .offline
+        default: return .wifi
         }
-        return "wifi.slash"
     }
 
     func boot() async {

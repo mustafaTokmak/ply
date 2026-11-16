@@ -4,11 +4,8 @@ import SwiftUI
 // `#if compiler` keeps the package building with Xcode 16 (CI), which has no glass APIs.
 
 enum Brand {
-    /// The rainbow of the app icon.
-    static let rainbow = LinearGradient(
-        colors: [Color(red: 1.0, green: 0.56, blue: 0.16), Color(red: 0.98, green: 0.25, blue: 0.55),
-                 Color(red: 0.72, green: 0.24, blue: 0.95), Color(red: 0.24, green: 0.48, blue: 1.0)],
-        startPoint: .leading, endPoint: .trailing)
+    /// The one solid accent: switches, prominent buttons, selection.
+    static let accent = Color(red: 0.72, green: 0.24, blue: 0.95)
 }
 
 extension View {
@@ -47,23 +44,5 @@ extension View {
         #else
         self
         #endif
-    }
-}
-
-/// Soft rainbow light behind the menu, so the glass has something to refract.
-struct MenuBackdrop: View {
-    @Environment(\.colorScheme) private var scheme
-
-    var body: some View {
-        ZStack {
-            Circle().fill(Color(red: 1.0, green: 0.56, blue: 0.16)).frame(width: 220).offset(x: -110, y: -40)
-            Circle().fill(Color(red: 0.98, green: 0.25, blue: 0.55)).frame(width: 200).offset(x: 90, y: 10)
-            Circle().fill(Color(red: 0.72, green: 0.24, blue: 0.95)).frame(width: 220).offset(x: -40, y: 170)
-            Circle().fill(Color(red: 0.24, green: 0.48, blue: 1.0)).frame(width: 240).offset(x: 120, y: 260)
-        }
-        .blur(radius: 70)
-        .opacity(scheme == .dark ? 0.45 : 0.30)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-        .allowsHitTesting(false)
     }
 }

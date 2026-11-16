@@ -107,7 +107,7 @@ private struct FeatureRow<Trailing: View>: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 17, weight: .semibold))
-                .foregroundStyle(isOn ? AnyShapeStyle(Brand.rainbow) : AnyShapeStyle(Color.secondary))
+                .foregroundStyle(isOn ? Brand.accent : Color.secondary)
                 .frame(width: 36, height: 36)
                 .background(Circle().fill(Color.primary.opacity(0.06)))
             VStack(alignment: .leading, spacing: 2) {
@@ -133,11 +133,9 @@ struct FeatureSettingSwitch: View {
 
     var body: some View {
         FeatureRow(icon: icon, title: title, subtitle: subtitle, isOn: value) {
-            Toggle("", isOn: Binding(get: { value }, set: { new in
+            PlySwitch(isOn: value, size: .large) { new in
                 Task { _ = await model.run(.updateSettings, [key: .bool(new)]) }
-            }))
-            .labelsHidden()
-            .toggleStyle(.switch)
+            }
         }
         .help(PlyCore.Settings.fields.first { $0.key == key }?.summary ?? "")
     }
@@ -157,11 +155,9 @@ struct FeatureActionSwitch: View {
         let busy = model.busy.contains(on) || model.busy.contains(off)
         FeatureRow(icon: icon, title: title, subtitle: subtitle, isOn: isOn) {
             if busy { ProgressView().controlSize(.small) }
-            Toggle("", isOn: Binding(get: { isOn }, set: { new in
+            PlySwitch(isOn: isOn, size: .large) { new in
                 Task { _ = await model.run(new ? on : off) }
-            }))
-            .labelsHidden()
-            .toggleStyle(.switch)
+            }
             .disabled(busy)
         }
         .help(Registry.spec(on).summary)
@@ -182,12 +178,9 @@ struct ActionToggle: View {
             Text(title).font(.body.weight(.medium))
             Spacer(minLength: 8)
             if model.busy.contains(on) || model.busy.contains(off) { ProgressView().controlSize(.mini) }
-            Toggle("", isOn: Binding(get: { isOn }, set: { new in
+            PlySwitch(isOn: isOn, size: .small) { new in
                 Task { _ = await model.run(new ? on : off, new ? onParams : [:]) }
-            }))
-            .labelsHidden()
-            .toggleStyle(.switch)
-            .controlSize(.small)
+            }
             .disabled(model.busy.contains(on) || model.busy.contains(off))
         }
         .help(Registry.spec(on).summary)
@@ -205,12 +198,9 @@ struct SettingToggle: View {
         HStack {
             Text(title).font(.callout)
             Spacer(minLength: 8)
-            Toggle("", isOn: Binding(get: { value }, set: { new in
+            PlySwitch(isOn: value, size: .small) { new in
                 Task { _ = await model.run(.updateSettings, [key: .bool(new)]) }
-            }))
-            .labelsHidden()
-            .toggleStyle(.switch)
-            .controlSize(.mini)
+            }
         }
         .help(PlyCore.Settings.fields.first { $0.key == key }?.summary ?? "")
     }
@@ -233,5 +223,56 @@ struct SettingPicker: View {
         .labelsHidden()
         .controlSize(.small)
         .help(PlyCore.Settings.fields.first { $0.key == key }?.summary ?? "")
+    }
+}
+
+
+/// Ply's own switch: a glass capsule track with a white knob, solid accent when on.
+/// Private to this file so every use goes through one of the controls above.
+private struct PlySwitch: View {
+    enum Size { case small, large }
+    let isOn: Bool
+    var size: Size = .small
+    let set: (Bool) -> Void
+    @Environment(\.isEnabled) private var isEnabled
+
+    var body: some View {
+        let w: CGFloat = size == .large ? 46 : 36, h: CGFloat = size == .large ? 28 : 22
+        Button { set(!isOn) } label: {
+            ZStack(alignment: isOn ? .trailing : .leading) {
+                track(width: w, height: h)
+                Circle()
+                    .fill(.white)
+                    .shadow(color: .black.opacity(0.22), radius: 2, y: 1)
+                    .frame(width: h - 4, height: h - 4)
+                    .padding(2)
+            }
+            .frame(width: w, height: h)
+            .contentShape(Capsule())
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isOn)
+        }
+        .buttonStyle(.plain)
+        .opacity(isEnabled ? 1 : 0.5)
+        .accessibilityLabel("Switch")
+        .accessibilityValue(isOn ? "on" : "off")
+    }
+
+    @ViewBuilder
+    private func track(width: CGFloat, height: CGFloat) -> some View {
+        #if compiler(>=6.2)
+        if #available(macOS 26.0, *) {
+            Capsule().fill(isOn ? Brand.accent : Color.primary.opacity(0.08))
+                .frame(width: width, height: height)
+                .glassEffect(isOn ? Glass.regular.tint(Brand.accent).interactive() : Glass.regular.interactive(), in: Capsule())
+        } else {
+            plainTrack(width: width, height: height)
+        }
+        #else
+        plainTrack(width: width, height: height)
+        #endif
+    }
+
+    private func plainTrack(width: CGFloat, height: CGFloat) -> some View {
+        Capsule().fill(isOn ? Brand.accent : Color.primary.opacity(0.15)).frame(width: width, height: height)
     }
 }

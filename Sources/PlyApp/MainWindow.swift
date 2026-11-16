@@ -23,15 +23,46 @@ final class MainWindow {
                     .frame(width: 316, alignment: .leading)
                     .padding(12)
             }
-            let w = NSWindow(contentViewController: NSHostingController(rootView: root))
+            let host = NSHostingView(rootView: root)
+            let size = host.fittingSize
+            let w = NSWindow(contentRect: NSRect(origin: .zero, size: size),
+                             styleMask: [.titled, .closable, .miniaturizable, .fullSizeContentView], backing: .buffered, defer: false)
             w.title = "Ply"
-            w.styleMask = [.titled, .closable, .miniaturizable]
+            w.titleVisibility = .hidden
+            w.titlebarAppearsTransparent = true
+            w.isMovableByWindowBackground = true
+            w.isOpaque = false
+            w.backgroundColor = .clear
+            w.contentView = Self.glassBackground(around: host)
             w.isReleasedWhenClosed = false
             w.center()
             window = w
         }
         NSApp.activate(ignoringOtherApps: true)
         window?.makeKeyAndOrderFront(nil)
+    }
+
+    /// The whole window is one sheet of Liquid Glass on macOS 26 (a material before that).
+    static func glassBackground(around content: NSView) -> NSView {
+        #if compiler(>=6.2)
+        if #available(macOS 26.0, *) {
+            let glass = NSGlassEffectView()
+            glass.cornerRadius = 26
+            glass.contentView = content
+            return glass
+        }
+        #endif
+        let effect = NSVisualEffectView()
+        effect.material = .popover
+        effect.blendingMode = .behindWindow
+        effect.state = .active
+        content.translatesAutoresizingMaskIntoConstraints = false
+        effect.addSubview(content)
+        NSLayoutConstraint.activate([
+            content.leadingAnchor.constraint(equalTo: effect.leadingAnchor), content.trailingAnchor.constraint(equalTo: effect.trailingAnchor),
+            content.topAnchor.constraint(equalTo: effect.topAnchor), content.bottomAnchor.constraint(equalTo: effect.bottomAnchor),
+        ])
+        return effect
     }
 
     /// Whether macOS is actually drawing Ply's menu bar icon.

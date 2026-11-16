@@ -22,8 +22,7 @@ struct MenuView: View {
         .padding(14)
         .frame(width: 340)
         .glassGroup()
-        .tint(Color(red: 0.72, green: 0.24, blue: 0.95))
-        .background(MenuBackdrop().clipped())
+        .tint(Brand.accent)
     }
 
     private var header: some View {
@@ -187,7 +186,7 @@ struct HeroStatus: View {
         HStack(spacing: 14) {
             Image(systemName: symbol)
                 .font(.system(size: 30, weight: .semibold))
-                .foregroundStyle(Brand.rainbow)
+                .foregroundStyle(Brand.accent)
                 .frame(width: 52, height: 52)
             VStack(alignment: .leading, spacing: 3) {
                 Text(status.summary).font(.title3.weight(.semibold)).fixedSize(horizontal: false, vertical: true)
