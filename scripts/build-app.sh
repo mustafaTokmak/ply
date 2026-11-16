@@ -21,6 +21,7 @@ if [ ! -f Resources/AppIcon.icns ]; then
   swift scripts/make-icon.swift build/Ply.iconset >/dev/null && iconutil -c icns build/Ply.iconset -o Resources/AppIcon.icns
 fi
 cp Resources/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+cp -R Resources/Switches "$APP/Contents/Resources/Switches"
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">

@@ -4,8 +4,9 @@ import SwiftUI
 // `#if compiler` keeps the package building with Xcode 16 (CI), which has no glass APIs.
 
 enum Brand {
-    /// The one solid accent: switches, prominent buttons, selection.
-    static let accent = Color(red: 0.72, green: 0.24, blue: 0.95)
+    /// The mint glow of the glass artwork: the one accent, for everything that is on.
+    static let mint = Color(red: 0.40, green: 0.80, blue: 0.57)
+    static let accent = mint
     /// How much window color sits on the clear glass (picked by eye: 37% window, 59% cards).
     static let windowFill = 0.37, cardFill = 0.59
 

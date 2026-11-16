@@ -46,16 +46,29 @@ struct MenuView: View {
         }
         FeatureSettingSwitch(key: "preferUSB", icon: "cable.connector", title: "iPhone cable first",
                              subtitle: usbSubtitle(s), value: s.settings.preferUSB)
+            .disabled(!iPhonePlugged(s))
+            .opacity(iPhonePlugged(s) ? 1 : 0.6)
         FeatureActionSwitch(icon: "arrow.triangle.merge", title: "Wi-Fi + iPhone together",
                             subtitle: combineSubtitle(s), isOn: s.combine.running, on: .combineStart, off: .combineStop)
+            .disabled(!canCombine(s))
+            .opacity(canCombine(s) ? 1 : 0.6)
         if !s.helper.installed { helperRow }
-        if let t = s.lastSpeedTest {
-            SpeedResultView(result: t).padding(10).glassCard(cornerRadius: 14)
-        }
+        SpeedTestRow(subtitle: speedSubtitle(s))
+    }
+
+    /// The cable switch only makes sense with an iPhone on the cable; the setting keeps its value meanwhile.
+    private func iPhonePlugged(_ s: StatusReport) -> Bool {
+        ["active", "plugged-in-idle", "plugged-in-no-hotspot"].contains(s.usb.state)
+    }
+
+    /// Combining needs two links, unless it is already running and should be stoppable.
+    private func canCombine(_ s: StatusReport) -> Bool {
+        s.combine.running || s.links.filter { $0.up && !$0.ipv4.isEmpty }.count >= 2
     }
 
     private func usbSubtitle(_ s: StatusReport) -> String {
-        if !s.settings.preferUSB { return "Off: macOS picks the network" }
+        if !iPhonePlugged(s) { return "No iPhone connected. Plug one in with Personal Hotspot on." }
+        if !s.settings.preferUSB { return "Off: Wi-Fi first, the cable is a backup" }
         switch s.usb.state {
         case "active": return s.links.first(where: { $0.primary })?.kind == .tether ? "On the cable now" : "Cable connected"
         case "plugged-in-idle": return "Plugged in, macOS keeps it idle"
@@ -64,11 +77,23 @@ struct MenuView: View {
         }
     }
 
+    private func speedSubtitle(_ s: StatusReport) -> String {
+        guard let t = s.lastSpeedTest else { return "Measures each link, then both together. Uses mobile data." }
+        if (t.combinedMbps ?? 0) == 0 && (t.bestSingleMbps ?? 0) == 0 {
+            return "Last test failed: " + (t.each.compactMap(\.error).first ?? "no link could download")
+        }
+        let both = t.combinedMbps.map { String(format: "Together %.0f Mbps", $0) } ?? String(format: "Best %.0f Mbps", t.bestSingleMbps ?? 0)
+        let gain = t.gainPercent.map { String(format: ", +%.0f%%", $0) } ?? ""
+        let ago = RelativeDateTimeFormatter()
+        ago.unitsStyle = .abbreviated
+        return both + gain + " · " + ago.localizedString(for: t.startedAt, relativeTo: Date())
+    }
+
     private func combineSubtitle(_ s: StatusReport) -> String {
         if s.combine.running {
             return "\(s.combine.activeFlows) connections over \(s.combine.healthyLinks) link\(s.combine.healthyLinks == 1 ? "" : "s")"
         }
-        return "More bandwidth for many connections"
+        return canCombine(s) ? "More bandwidth for many connections" : "Needs Wi-Fi and the iPhone both connected"
     }
 
     private var helperRow: some View {
@@ -99,6 +124,7 @@ struct MenuView: View {
     private func usbSection(_ s: StatusReport) -> some View {
         MenuSection(title: "USB first") {
             SettingToggle(key: "preferUSB", title: "Prefer iPhone USB over Wi-Fi", value: s.settings.preferUSB)
+                .disabled(!iPhonePlugged(s))
             SettingToggle(key: "leaveIPhoneWiFiWhenUSB", title: "Leave iPhone's Wi-Fi hotspot when cabled", value: s.settings.leaveIPhoneWiFiWhenUSB)
             SettingToggle(key: "wifiOffWhenUSB", title: "Turn Wi-Fi off while cabled", value: s.settings.wifiOffWhenUSB)
             if !s.helper.installed {
@@ -131,7 +157,7 @@ struct MenuView: View {
     private func speedSection(_ s: StatusReport) -> some View {
         MenuSection(title: "Speed") {
             HStack {
-                ActionButton(action: .speedTest, label: "Run speed test", systemImage: "speedometer")
+                ActionButton(action: .speedTest, label: "Run speed test", dial: true)
                 Spacer()
                 Text("uses mobile data").font(.caption2).foregroundStyle(.tertiary)
             }
@@ -146,8 +172,6 @@ struct MenuView: View {
             if model.status?.settings.uiMode == .advanced {
                 ActionButton(action: .diagnose, systemImage: "stethoscope")
                 ActionButton(action: .agentPrompt, label: "Agent prompt", systemImage: "doc.on.clipboard", effect: .copy(field: "prompt"))
-            } else {
-                ActionButton(action: .speedTest, label: "Speed test", systemImage: "speedometer", glass: true)
             }
             Spacer()
             ActionButton(action: .about, label: "About", effect: .open(field: "source"))
