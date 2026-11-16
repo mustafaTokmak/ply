@@ -7,6 +7,13 @@ public enum SplitMode: String, Codable, CaseIterable, Sendable {
     case site
 }
 
+public enum UIMode: String, Codable, CaseIterable, Sendable {
+    /// Status and the two main switches.
+    case simple
+    /// Every setting, the per-link view and speed results.
+    case advanced
+}
+
 public struct Settings: Codable, Equatable, Sendable {
     public var preferUSB = true
     public var leaveIPhoneWiFiWhenUSB = true
@@ -17,11 +24,12 @@ public struct Settings: Codable, Equatable, Sendable {
     public var tetherInterfaces: [String] = []
     public var speedTestURL = "https://speed.cloudflare.com/__down?bytes=25000000"
     public var speedTestMaxMB = 40
+    public var uiMode: UIMode = .simple
 
     public init() {}
 
     enum CodingKeys: String, CodingKey, CaseIterable {
-        case preferUSB, leaveIPhoneWiFiWhenUSB, wifiOffWhenUSB, combineAuto, split, systemProxy, tetherInterfaces, speedTestURL, speedTestMaxMB
+        case preferUSB, leaveIPhoneWiFiWhenUSB, wifiOffWhenUSB, combineAuto, split, systemProxy, tetherInterfaces, speedTestURL, speedTestMaxMB, uiMode
     }
 
     public init(from decoder: Decoder) throws {
@@ -36,6 +44,7 @@ public struct Settings: Codable, Equatable, Sendable {
         tetherInterfaces = try c.decodeIfPresent([String].self, forKey: .tetherInterfaces) ?? d.tetherInterfaces
         speedTestURL = try c.decodeIfPresent(String.self, forKey: .speedTestURL) ?? d.speedTestURL
         speedTestMaxMB = try c.decodeIfPresent(Int.self, forKey: .speedTestMaxMB) ?? d.speedTestMaxMB
+        uiMode = try c.decodeIfPresent(UIMode.self, forKey: .uiMode) ?? d.uiMode
     }
 
     public struct Field: Sendable {
@@ -55,6 +64,7 @@ public struct Settings: Codable, Equatable, Sendable {
         Field(key: "tetherInterfaces", type: .stringArray, summary: "Extra BSD interface names (e.g. en9) to treat as a phone tether, for Android or other USB modems."),
         Field(key: "speedTestURL", type: .string, summary: "HTTPS download URL used by speed_test. Default is Cloudflare's speed endpoint."),
         Field(key: "speedTestMaxMB", type: .integer, summary: "Most megabytes speed_test may download per link per phase (mobile data). 5 to 500. Default 40."),
+        Field(key: "uiMode", type: .enumeration(UIMode.allCases.map(\.rawValue)), summary: "How much the menu shows: 'simple' (status and the two main switches) or 'advanced' (every setting, each link and speed results). Default simple."),
     ]
 
     /// Applies a partial update. Unknown keys and wrong types are rejected with a readable message.

@@ -10,40 +10,91 @@ struct MenuView: View {
         VStack(alignment: .leading, spacing: 12) {
             header
             if let s = model.status {
-                LinksCard(status: s)
-                if let f = s.findings.first(where: { $0.severity == .warn || $0.severity == .error }) {
-                    FindingBanner(finding: f)
-                }
-                usbSection(s)
-                combineSection(s)
-                speedSection(s)
+                if s.settings.uiMode == .simple { simple(s) } else { advanced(s) }
             } else {
                 HStack { ProgressView().controlSize(.small); Text("Reading network state...").foregroundStyle(.secondary) }
             }
             if let m = model.message ?? model.bootError {
                 Text(m).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
-            Divider()
             footer
         }
         .padding(14)
         .frame(width: 340)
+        .glassGroup()
+        .tint(Color(red: 0.72, green: 0.24, blue: 0.95))
+        .background(MenuBackdrop().clipped())
     }
 
     private var header: some View {
-        HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Ply").font(.headline)
-                Text(model.status?.summary ?? "Starting...")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-            }
+        HStack(alignment: .center, spacing: 8) {
+            Text("Ply").font(.title3.weight(.bold))
             Spacer()
-            Image(systemName: model.menuBarSymbol)
-                .font(.title2)
-                .foregroundStyle(Color.accentColor)
+            if let s = model.status {
+                SettingPicker(key: "uiMode", options: [("simple", "Simple"), ("advanced", "Advanced")], value: s.settings.uiMode.rawValue)
+                    .frame(width: 150)
+            }
         }
+    }
+
+    // MARK: simple
+
+    @ViewBuilder
+    private func simple(_ s: StatusReport) -> some View {
+        HeroStatus(status: s)
+        if let f = s.findings.first(where: { $0.severity == .warn || $0.severity == .error }) {
+            FindingBanner(finding: f)
+        }
+        FeatureSettingSwitch(key: "preferUSB", icon: "cable.connector", title: "iPhone cable first",
+                             subtitle: usbSubtitle(s), value: s.settings.preferUSB)
+        FeatureActionSwitch(icon: "arrow.triangle.merge", title: "Wi-Fi + iPhone together",
+                            subtitle: combineSubtitle(s), isOn: s.combine.running, on: .combineStart, off: .combineStop)
+        if !s.helper.installed { helperRow }
+        if let t = s.lastSpeedTest {
+            SpeedResultView(result: t).padding(10).glassCard(cornerRadius: 14)
+        }
+    }
+
+    private func usbSubtitle(_ s: StatusReport) -> String {
+        if !s.settings.preferUSB { return "Off: macOS picks the network" }
+        switch s.usb.state {
+        case "active": return s.links.first(where: { $0.primary })?.kind == .tether ? "On the cable now" : "Cable connected"
+        case "plugged-in-idle": return "Plugged in, macOS keeps it idle"
+        case "plugged-in-no-hotspot": return "Turn on Personal Hotspot on the iPhone"
+        default: return "Plug in your iPhone with Personal Hotspot on"
+        }
+    }
+
+    private func combineSubtitle(_ s: StatusReport) -> String {
+        if s.combine.running {
+            return "\(s.combine.activeFlows) connections over \(s.combine.healthyLinks) link\(s.combine.healthyLinks == 1 ? "" : "s")"
+        }
+        return "More bandwidth for many connections"
+    }
+
+    private var helperRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "lock.shield").foregroundStyle(.orange)
+            Text("Needs a one-time admin password.").font(.caption).foregroundStyle(.secondary)
+            Spacer()
+            ActionButton(action: .installHelper, label: "Install helper", prominent: true)
+        }
+        .padding(10)
+        .glassCard(cornerRadius: 14, tint: .orange)
+    }
+
+    // MARK: advanced
+
+    @ViewBuilder
+    private func advanced(_ s: StatusReport) -> some View {
+        Text(s.summary).font(.subheadline).foregroundStyle(.secondary)
+        LinksCard(status: s)
+        if let f = s.findings.first(where: { $0.severity == .warn || $0.severity == .error }) {
+            FindingBanner(finding: f)
+        }
+        usbSection(s)
+        combineSection(s)
+        speedSection(s)
     }
 
     private func usbSection(_ s: StatusReport) -> some View {
@@ -92,14 +143,60 @@ struct MenuView: View {
     }
 
     private var footer: some View {
-        HStack(spacing: 14) {
-            ActionButton(action: .diagnose, systemImage: "stethoscope")
-            ActionButton(action: .agentPrompt, label: "Agent prompt", systemImage: "doc.on.clipboard", effect: .copy(field: "prompt"))
+        HStack(spacing: 10) {
+            if model.status?.settings.uiMode == .advanced {
+                ActionButton(action: .diagnose, systemImage: "stethoscope")
+                ActionButton(action: .agentPrompt, label: "Agent prompt", systemImage: "doc.on.clipboard", effect: .copy(field: "prompt"))
+            } else {
+                ActionButton(action: .speedTest, label: "Speed test", systemImage: "speedometer", glass: true)
+            }
             Spacer()
             ActionButton(action: .about, label: "About", effect: .open(field: "source"))
             ActionButton(action: .quit, label: "Quit")
         }
         .font(.callout)
+    }
+}
+
+/// The big status at the top of the simple menu.
+struct HeroStatus: View {
+    let status: StatusReport
+
+    var primary: LinkReport? { status.links.first { $0.primary } }
+
+    var symbol: String {
+        if status.combine.running && status.combine.healthyLinks >= 2 { return "arrow.triangle.merge" }
+        switch primary?.kind {
+        case .tether: return "cable.connector"
+        case .wifi: return "wifi"
+        case .ethernet: return "network"
+        default: return "wifi.slash"
+        }
+    }
+
+    var detail: String {
+        if status.combine.running {
+            let rx = status.links.filter(\.up).reduce(0) { $0 + $1.rxBps }
+            return "↓ " + Rate.text(rx) + " across all links"
+        }
+        guard let p = primary else { return "No internet connection" }
+        return "↓ " + Rate.text(p.rxBps) + "   ↑ " + Rate.text(p.txBps)
+    }
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: symbol)
+                .font(.system(size: 30, weight: .semibold))
+                .foregroundStyle(Brand.rainbow)
+                .frame(width: 52, height: 52)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(status.summary).font(.title3.weight(.semibold)).fixedSize(horizontal: false, vertical: true)
+                Text(detail).font(.callout.monospacedDigit()).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .glassCard(cornerRadius: 22)
     }
 }
 
@@ -113,7 +210,11 @@ struct MenuSection<Content: View>: View {
                 .font(.caption2.weight(.semibold))
                 .foregroundStyle(.secondary)
                 .tracking(0.6)
-            content
+                .padding(.leading, 4)
+            VStack(alignment: .leading, spacing: 8) { content }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .glassCard(cornerRadius: 16)
         }
     }
 }
@@ -131,7 +232,7 @@ struct LinksCard: View {
                 Text("No network links").foregroundStyle(.secondary).padding(10)
             }
         }
-        .background(RoundedRectangle(cornerRadius: 10).fill(Color.primary.opacity(0.05)))
+        .glassCard(cornerRadius: 14)
     }
 }
 
@@ -217,8 +318,9 @@ struct FindingBanner: View {
                 }
             }
         }
-        .padding(10)
-        .background(RoundedRectangle(cornerRadius: 10).fill(Color.orange.opacity(0.10)))
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCard(cornerRadius: 16, tint: .orange)
     }
 }
 
@@ -243,8 +345,7 @@ struct SpeedResultView: View {
                 }
             }
         }
-        .padding(8)
-        .background(RoundedRectangle(cornerRadius: 8).fill(Color.primary.opacity(0.04)))
+
     }
 }
 

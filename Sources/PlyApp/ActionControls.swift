@@ -37,6 +37,8 @@ struct ActionButton: View {
     var systemImage: String?
     var effect: ResultEffect = .none
     var prominent = false
+    /// A glass capsule button (macOS 26), bordered before that.
+    var glass = false
     @EnvironmentObject var model: AppModel
 
     var body: some View {
@@ -56,10 +58,113 @@ struct ActionButton: View {
         .disabled(model.busy.contains(action))
         .help(Registry.spec(action).summary)
         if prominent {
-            button.buttonStyle(.borderedProminent).controlSize(.small)
+            button.prominentStyle()
+        } else if glass {
+            button.glassStyle()
         } else {
             button.buttonStyle(.borderless)
         }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func prominentStyle() -> some View {
+        #if compiler(>=6.2)
+        if #available(macOS 26.0, *) {
+            buttonStyle(.glassProminent).controlSize(.regular)
+        } else {
+            buttonStyle(.borderedProminent).controlSize(.small)
+        }
+        #else
+        buttonStyle(.borderedProminent).controlSize(.small)
+        #endif
+    }
+
+    @ViewBuilder
+    func glassStyle() -> some View {
+        #if compiler(>=6.2)
+        if #available(macOS 26.0, *) {
+            buttonStyle(.glass).controlSize(.regular)
+        } else {
+            buttonStyle(.bordered).controlSize(.small)
+        }
+        #else
+        buttonStyle(.bordered).controlSize(.small)
+        #endif
+    }
+}
+
+/// The big row used in the simple menu: icon, title, one line of state, and a switch.
+private struct FeatureRow<Trailing: View>: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+    let isOn: Bool
+    @ViewBuilder let trailing: Trailing
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(isOn ? AnyShapeStyle(Brand.rainbow) : AnyShapeStyle(Color.secondary))
+                .frame(width: 36, height: 36)
+                .background(Circle().fill(Color.primary.opacity(0.06)))
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.body.weight(.semibold))
+                Text(subtitle).font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 8)
+            trailing
+        }
+        .padding(12)
+        .glassCard(cornerRadius: 18)
+    }
+}
+
+/// A big switch for one boolean setting, via update_settings.
+struct FeatureSettingSwitch: View {
+    let key: String
+    let icon: String
+    let title: String
+    let subtitle: String
+    let value: Bool
+    @EnvironmentObject var model: AppModel
+
+    var body: some View {
+        FeatureRow(icon: icon, title: title, subtitle: subtitle, isOn: value) {
+            Toggle("", isOn: Binding(get: { value }, set: { new in
+                Task { _ = await model.run(.updateSettings, [key: .bool(new)]) }
+            }))
+            .labelsHidden()
+            .toggleStyle(.switch)
+        }
+        .help(PlyCore.Settings.fields.first { $0.key == key }?.summary ?? "")
+    }
+}
+
+/// A big switch whose on/off runs two different actions, e.g. combine_start / combine_stop.
+struct FeatureActionSwitch: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+    let isOn: Bool
+    let on: ActionID
+    let off: ActionID
+    @EnvironmentObject var model: AppModel
+
+    var body: some View {
+        let busy = model.busy.contains(on) || model.busy.contains(off)
+        FeatureRow(icon: icon, title: title, subtitle: subtitle, isOn: isOn) {
+            if busy { ProgressView().controlSize(.small) }
+            Toggle("", isOn: Binding(get: { isOn }, set: { new in
+                Task { _ = await model.run(new ? on : off) }
+            }))
+            .labelsHidden()
+            .toggleStyle(.switch)
+            .disabled(busy)
+        }
+        .help(Registry.spec(on).summary)
     }
 }
 

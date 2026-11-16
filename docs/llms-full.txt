@@ -193,6 +193,7 @@ Change one or more settings. Pass only the keys to change.
   - `tetherInterfaces` (string[]): Extra BSD interface names (e.g. en9) to treat as a phone tether, for Android or other USB modems.
   - `speedTestURL` (string): HTTPS download URL used by speed_test. Default is Cloudflare's speed endpoint.
   - `speedTestMaxMB` (integer): Most megabytes speed_test may download per link per phase (mobile data). 5 to 500. Default 40.
+  - `uiMode` (simple|advanced): How much the menu shows: 'simple' (status and the two main switches) or 'advanced' (every setting, each link and speed results). Default simple.
 
 ### repair_tether
 
@@ -302,6 +303,7 @@ Stop the running Ply engine (app or daemon), restoring any proxy settings first.
 - `tetherInterfaces` (string[]): Extra BSD interface names (e.g. en9) to treat as a phone tether, for Android or other USB modems.
 - `speedTestURL` (string): HTTPS download URL used by speed_test. Default is Cloudflare's speed endpoint.
 - `speedTestMaxMB` (integer): Most megabytes speed_test may download per link per phase (mobile data). 5 to 500. Default 40.
+- `uiMode` (simple|advanced): How much the menu shows: 'simple' (status and the two main switches) or 'advanced' (every setting, each link and speed results). Default simple.
 
 ## HTTP endpoints
 - `GET /health`: Liveness: {app, version, engine}. No token needed.

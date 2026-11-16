@@ -32,6 +32,15 @@ enum PreviewRenderer {
                 print("could not read status JSON: \(error)")
             }
         }
+        // Every scene in both menu modes: simple as <name>, advanced as <name> with "-advanced".
+        scenes = scenes.flatMap { name, report, scheme -> [(String, StatusReport, ColorScheme)] in
+            var simple = report, advanced = report
+            simple.settings.uiMode = .simple
+            advanced.settings.uiMode = .advanced
+            let parts = name.split(separator: "-")
+            let advancedName = (parts.dropLast() + ["advanced", parts.last!]).joined(separator: "-")
+            return [(name, simple, scheme), (advancedName, advanced, scheme)]
+        }
         _ = NSApplication.shared
         for (name, report, scheme) in scenes {
             let model = AppModel.shared

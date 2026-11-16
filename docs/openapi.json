@@ -1274,6 +1274,14 @@
                     },
                     "type" : "array"
                   },
+                  "uiMode" : {
+                    "description" : "How much the menu shows: 'simple' (status and the two main switches) or 'advanced' (every setting, each link and speed results). Default simple.",
+                    "enum" : [
+                      "simple",
+                      "advanced"
+                    ],
+                    "type" : "string"
+                  },
                   "wifiOffWhenUSB" : {
                     "description" : "Turn Wi-Fi off while iPhone USB is up and back on when it goes away. Ignored while combining. Default false.",
                     "type" : "boolean"
